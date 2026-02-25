@@ -24,8 +24,8 @@ NanoClaw 用一个您能在 8 分钟内理解的代码库，为您提供了同�
 ## 快速开始
 
 ```bash
-git clone https://github.com/qwibitai/nanoclaw.git
-cd nanoclaw
+git clone https://github.com/nadahlberg/codeclaw.git
+cd codeclaw
 claude
 ```
 

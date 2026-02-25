@@ -159,7 +159,7 @@ Report final status:
 
 ## Troubleshooting
 
-**No upstream remote:** The fetch script auto-adds `upstream` pointing to `https://github.com/qwibitai/nanoclaw.git`. If the user forked from a different URL, they should set the remote manually: `git remote add upstream <url>`.
+**No upstream remote:** The fetch script auto-adds `upstream` pointing to `https://github.com/nadahlberg/codeclaw.git`. If the user forked from a different URL, they should set the remote manually: `git remote add upstream <url>`.
 
 **Merge conflicts in many files:** Consider whether the user has heavily customized core files. Suggest using the skills system for modifications instead of direct edits, as skills survive updates better.
 

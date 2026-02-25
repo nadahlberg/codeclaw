@@ -25,7 +25,7 @@ function isPublicUrl(url: string): boolean {
 export function buildAppManifest(webhookUrl: string, appName?: string): object {
   const manifest: Record<string, unknown> = {
     name: appName || 'CodeClaw AI',
-    url: 'https://github.com/qwibitai/CodeClaw',
+    url: 'https://github.com/nadahlberg/codeclaw',
     redirect_url: `${webhookUrl}/github/callback`,
     public: false,
     default_permissions: {
