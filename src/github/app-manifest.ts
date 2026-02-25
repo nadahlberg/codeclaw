@@ -7,10 +7,9 @@
  * subscribable webhook event and the manifest flow rejects it.
  *
  * When the webhook URL is localhost (or any non-public address), we omit
- * `hook_attributes` entirely so the manifest passes GitHub's validation.
- * The webhook URL can be configured later in the App settings once a
- * public URL (e.g. via ngrok, Tailscale Funnel, or a cloud deploy) is
- * available.
+ * `hook_attributes` from the server-side manifest. The setup page prompts
+ * the user for a public tunnel URL and injects `hook_attributes` via
+ * client-side JS before the form is submitted to GitHub.
  */
 
 function isPublicUrl(url: string): boolean {

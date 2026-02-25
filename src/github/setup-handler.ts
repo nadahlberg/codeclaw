@@ -25,12 +25,14 @@ export function getSetupPageHtml(webhookUrl: string): string | null {
   const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|::1)(:|\/|$)/.test(webhookUrl);
   const localhostNote = isLocalhost
     ? `<div class="note">
-        <strong>Running on localhost</strong> &mdash; the GitHub App will be created
-        without a webhook URL since GitHub cannot reach localhost. After creating
-        the App, configure a public URL (e.g. via <code>ngrok</code>,
-        Tailscale Funnel, or a cloud deploy) and set the <code>WEBHOOK_URL</code>
-        environment variable, then update the webhook URL in your
-        <a href="https://github.com/settings/apps">GitHub App settings</a>.
+        <strong>Running on localhost</strong> &mdash; GitHub cannot deliver webhooks
+        to localhost, so you need a public URL that tunnels to this server.
+        <br><br>
+        Run a tunnel (e.g. <code>ngrok http ${new URL(webhookUrl).port || '3000'}</code>)
+        and paste the public URL below:
+        <input type="text" id="webhookUrl"
+          placeholder="https://abc123.ngrok-free.app"
+          style="display:block; width:100%; margin-top:8px; padding:8px; font-size:14px; border:1px solid #d4a72c; border-radius:4px; box-sizing:border-box;" />
       </div>`
     : '';
 
@@ -55,6 +57,27 @@ export function getSetupPageHtml(webhookUrl: string): string | null {
     <button type="submit" class="btn">Create GitHub App</button>
   </form>
   <p><small>This will redirect you to GitHub to approve the app creation.</small></p>
+  ${isLocalhost ? `<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+      var urlInput = document.getElementById('webhookUrl');
+      if (!urlInput) return;
+      var publicUrl = urlInput.value.replace(/\\/+$/, '');
+      if (!publicUrl) {
+        e.preventDefault();
+        alert('Please enter a public webhook URL so GitHub can deliver events.');
+        return;
+      }
+      try { new URL(publicUrl); } catch (_) {
+        e.preventDefault();
+        alert('Please enter a valid URL (e.g. https://abc123.ngrok-free.app).');
+        return;
+      }
+      var input = this.querySelector('input[name="manifest"]');
+      var manifest = JSON.parse(input.value);
+      manifest.hook_attributes = { url: publicUrl + '/github/webhooks', active: true };
+      input.value = JSON.stringify(manifest);
+    });
+  </script>` : ''}
 </body>
 </html>`;
 }

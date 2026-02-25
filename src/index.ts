@@ -40,7 +40,6 @@ import {
 import { GitHubTokenManager, loadGitHubAppConfig } from './github/auth.js';
 import { checkPermission, DEFAULT_ACCESS_POLICY, RateLimiter } from './github/access-control.js';
 import { GitHubEvent, mapWebhookToEvent, repoJidFromThreadJid, parseRepoFromJid } from './github/event-mapper.js';
-import { getSetupPageHtml, handleManifestCallback } from './github/setup-handler.js';
 import { GroupQueue } from './group-queue.js';
 import { resolveGroupFolderPath } from './group-folder.js';
 import { startIpcWatcher } from './ipc.js';
@@ -620,26 +619,16 @@ async function main(): Promise<void> {
           logger.error({ err, deliveryId }, 'Error processing webhook event');
         });
       },
-      getSetupPageHtml: () => null, // Setup complete
     });
   } else {
     // No GitHub App configured — run in setup-only mode
     logger.warn('GitHub App not configured, starting in setup mode');
-    logger.info(`Visit http://localhost:${PORT}/github/setup to configure`);
+    logger.info('Run: npx tsx setup/index.ts --step github-app -- --webhook-url <YOUR_PUBLIC_URL>');
 
     startWebhookServer({
       port: PORT,
       webhookSecret: crypto.randomBytes(32).toString('hex'),
       onEvent: () => {}, // No events in setup mode
-      getSetupPageHtml: () => {
-        const webhookUrl = process.env.WEBHOOK_URL || `http://localhost:${PORT}`;
-        return getSetupPageHtml(webhookUrl);
-      },
-      onManifestCallback: async (code: string) => {
-        const html = await handleManifestCallback(code);
-        logger.info('GitHub App setup complete! Restart CodeClaw to load credentials.');
-        return html;
-      },
     });
   }
 

@@ -1,6 +1,6 @@
 /**
  * Webhook Server
- * HTTP server for receiving GitHub webhooks and serving the setup wizard.
+ * HTTP server for receiving GitHub webhooks.
  * Uses Node.js built-in http module (no framework).
  */
 import http from 'http';
@@ -12,10 +12,6 @@ export interface WebhookServerOpts {
   port: number;
   webhookSecret: string;
   onEvent: (eventName: string, deliveryId: string, payload: Record<string, unknown>) => void;
-  /** Serve setup page HTML. Return null if setup is complete. */
-  getSetupPageHtml?: () => string | null;
-  /** Handle the GitHub App Manifest callback. */
-  onManifestCallback?: (code: string) => Promise<string>;
 }
 
 export function startWebhookServer(opts: WebhookServerOpts): http.Server {
@@ -26,39 +22,6 @@ export function startWebhookServer(opts: WebhookServerOpts): http.Server {
     if (req.method === 'GET' && url.pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'ok' }));
-      return;
-    }
-
-    // Setup wizard page
-    if (req.method === 'GET' && url.pathname === '/github/setup') {
-      const html = opts.getSetupPageHtml?.();
-      if (html) {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(html);
-      } else {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Setup complete. Install the GitHub App on your repos.');
-      }
-      return;
-    }
-
-    // GitHub App Manifest callback
-    if (req.method === 'GET' && url.pathname === '/github/callback') {
-      const code = url.searchParams.get('code');
-      if (!code || !opts.onManifestCallback) {
-        res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.end('Missing code parameter');
-        return;
-      }
-      try {
-        const html = await opts.onManifestCallback(code);
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(html);
-      } catch (err) {
-        logger.error({ err }, 'Manifest callback error');
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('Setup failed. Check server logs.');
-      }
       return;
     }
 
