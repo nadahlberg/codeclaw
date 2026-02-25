@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "codeclaw"
+version = "1.1.2"
+description = "GitHub AI coding agent. Responds to issues and PRs with Claude in containers."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "httpx>=0.28.0",
+    "PyJWT[crypto]>=2.10.0",
+    "cryptography>=44.0.0",
+    "pydantic>=2.10.0",
+    "structlog>=24.4.0",
+    "croniter>=6.0.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.25.0",
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+codeclaw = "codeclaw.main:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100

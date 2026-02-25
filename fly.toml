@@ -8,7 +8,6 @@ primary_region = "iad"
   dockerfile = "Dockerfile.deploy"
 
 [env]
-  NODE_ENV = "production"
   PORT = "3000"
 
 [http_service]

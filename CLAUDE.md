@@ -4,24 +4,27 @@ GitHub AI coding agent. See [README.md](README.md) for setup. See [docs/REQUIREM
 
 ## Quick Context
 
-Single Node.js process that receives GitHub webhooks, routes events to Claude Agent SDK running in containers (Linux VMs). Each repo gets isolated filesystem and memory. Agents respond via the GitHub API (comments, reviews, PRs).
+Single Python process (FastAPI + uvicorn) that receives GitHub webhooks, routes events to Claude Agent SDK running in containers (Linux VMs). Each repo gets isolated filesystem and memory. Agents respond via the GitHub API (comments, reviews, PRs).
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `src/index.ts` | Orchestrator: webhook handling, repo checkout, agent invocation |
-| `src/webhook-server.ts` | HTTP server for GitHub webhooks |
-| `src/channels/github.ts` | GitHub channel: post comments, reviews, PRs via Octokit |
-| `src/github/auth.ts` | GitHub App JWT auth + installation token caching |
-| `src/github/event-mapper.ts` | Webhook payload → normalized messages |
-| `src/github/access-control.ts` | Permission checking + rate limiting |
-| `src/ipc.ts` | IPC watcher and task processing |
-| `src/router.ts` | Message formatting and XML escaping |
-| `src/config.ts` | Paths, intervals, container config |
-| `src/container-runner.ts` | Spawns agent containers with mounts |
-| `src/task-scheduler.ts` | Runs scheduled tasks |
-| `src/db.ts` | SQLite operations |
+| `codeclaw/main.py` | Orchestrator: webhook handling, repo checkout, agent invocation |
+| `codeclaw/webhook_server.py` | FastAPI server for GitHub webhooks |
+| `codeclaw/channels/github.py` | GitHub channel: post comments, reviews, PRs via httpx |
+| `codeclaw/github/auth.py` | GitHub App JWT auth + installation token caching |
+| `codeclaw/github/event_mapper.py` | Webhook payload → normalized messages |
+| `codeclaw/github/access_control.py` | Permission checking + rate limiting |
+| `codeclaw/ipc.py` | IPC watcher and task processing |
+| `codeclaw/router.py` | Message formatting and XML escaping |
+| `codeclaw/config.py` | Paths, intervals, container config |
+| `codeclaw/container_runner.py` | Spawns agent containers with mounts |
+| `codeclaw/task_scheduler.py` | Runs scheduled tasks |
+| `codeclaw/db.py` | SQLite operations |
+| `codeclaw/models.py` | Pydantic models (RegisteredGroup, NewMessage, etc.) |
+| `container/agent_runner/main.py` | Container-side agent entry point (Python SDK) |
+| `container/agent_runner/ipc_tools.py` | In-process MCP tools for agents |
 | `groups/{name}/CLAUDE.md` | Per-group memory (isolated) |
 | `container/skills/agent-browser.md` | Browser automation tool (available to all agents via Bash) |
 
@@ -37,9 +40,10 @@ Single Node.js process that receives GitHub webhooks, routes events to Claude Ag
 Run commands directly—don't tell the user to run them.
 
 ```bash
-npm run dev          # Run with hot reload
-npm run build        # Compile TypeScript
-./container/build.sh # Rebuild agent container
+python -m codeclaw.main   # Run the server
+pytest                     # Run tests
+ruff check codeclaw/       # Lint
+./container/build.sh       # Rebuild agent container
 ```
 
 Service management:

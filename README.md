@@ -23,17 +23,16 @@ Agents run in Linux containers with filesystem isolation. They can only see the 
 ```bash
 git clone <your-fork-url>
 cd codeclaw
-npm install
-npm run build
+pip install -e ".[dev]"
 ./container/build.sh
 ```
 
 ### Create a GitHub App
 
-Before starting the server, create a GitHub App using the CLI setup script. Pass the public URL where GitHub will send webhooks (e.g. an ngrok tunnel or your server's domain):
+Before starting the server, create a GitHub App. Pass the public URL where GitHub will send webhooks (e.g. an ngrok tunnel or your server's domain):
 
 ```bash
-npx tsx setup/index.ts --step github-app -- --webhook-url https://your-domain.com
+python -m setup.github_app --webhook-url https://your-domain.com
 ```
 
 This opens your browser to create a GitHub App via the manifest flow, exchanges the OAuth code, and saves the credentials to `.env` and `~/.config/codeclaw/github-app.pem` automatically. Install the app on the repos you want to monitor when prompted.
@@ -41,7 +40,9 @@ This opens your browser to create a GitHub App via the manifest flow, exchanges 
 ### Start the server
 
 ```bash
-npm start
+codeclaw
+# or
+python -m codeclaw.main
 ```
 
 ## Deploy to Fly.io
@@ -59,13 +60,14 @@ fly deploy
 ## Self-Host
 
 Requirements:
-- Node.js 20+
+- Python 3.12+
 - Docker (for spawning agent containers)
+- Node.js 20+ (for Claude Code CLI, used inside containers)
 
-Set `ANTHROPIC_API_KEY` in your environment, then run the CLI setup to create a GitHub App:
+Set `ANTHROPIC_API_KEY` in your environment, then run the setup to create a GitHub App:
 
 ```bash
-npx tsx setup/index.ts --step github-app -- --webhook-url https://your-public-url.com
+python -m setup.github_app --webhook-url https://your-public-url.com
 ```
 
 This writes `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, and `GITHUB_PRIVATE_KEY_PATH` to `.env` automatically. If you prefer to configure manually, set these environment variables yourself and store the private key at `~/.config/codeclaw/github-app.pem`.
@@ -83,21 +85,33 @@ access:
 
 Permission levels: `admin` > `maintain` > `write` > `triage` > `read` > `none`
 
+## Development
+
+```bash
+pip install -e ".[dev]"     # Install with dev dependencies
+python -m codeclaw.main     # Run the server
+pytest                      # Run tests
+ruff check codeclaw/ tests/ # Lint
+./container/build.sh        # Rebuild agent container
+```
+
 ## Architecture
 
-Single Node.js process. Webhook-driven (no polling). Agents execute in isolated Linux containers with filesystem isolation.
+Single Python process (FastAPI + uvicorn). Webhook-driven (no polling). Agents execute in isolated Linux containers with filesystem isolation.
 
 Key files:
-- `src/index.ts` — Orchestrator: webhook handling, repo checkout, agent invocation
-- `src/webhook-server.ts` — HTTP server for GitHub webhooks
-- `src/channels/github.ts` — GitHub channel: comments, reviews, PRs via Octokit
-- `src/github/auth.ts` — GitHub App JWT auth + installation token caching
-- `src/github/event-mapper.ts` — Webhook payload normalization
-- `src/github/access-control.ts` — Permission checking + rate limiting
-- `src/container-runner.ts` — Spawns agent containers with repo mounts
-- `src/ipc.ts` — IPC watcher for structured GitHub responses
-- `src/task-scheduler.ts` — Scheduled tasks
-- `src/db.ts` — SQLite (messages, groups, processed events)
+- `codeclaw/main.py` — Orchestrator: webhook handling, repo checkout, agent invocation
+- `codeclaw/webhook_server.py` — FastAPI server for GitHub webhooks
+- `codeclaw/channels/github.py` — GitHub channel: comments, reviews, PRs via httpx
+- `codeclaw/github/auth.py` — GitHub App JWT auth + installation token caching
+- `codeclaw/github/event_mapper.py` — Webhook payload normalization
+- `codeclaw/github/access_control.py` — Permission checking + rate limiting
+- `codeclaw/container_runner.py` — Spawns agent containers with repo mounts
+- `codeclaw/ipc.py` — IPC watcher for structured GitHub responses
+- `codeclaw/task_scheduler.py` — Scheduled tasks
+- `codeclaw/db.py` — SQLite (messages, groups, processed events)
+- `container/agent_runner/main.py` — In-container agent runner (Python SDK)
+- `container/agent_runner/ipc_tools.py` — In-process MCP tools for agents
 
 ## License
 

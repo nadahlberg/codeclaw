@@ -1,4 +1,15 @@
-# Dependencies
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+
+# Dependencies (legacy Node.js)
 node_modules/
 
 # Build output
@@ -31,5 +42,10 @@ groups/global/*
 
 # Skills system (local per-installation state)
 .codeclaw/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
 
 agents-sdk-docs

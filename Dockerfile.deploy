@@ -2,7 +2,7 @@
 # Runs the host process (webhook server, orchestrator, task scheduler).
 # Agent containers are spawned as sibling containers via the Docker socket.
 
-FROM node:22-slim
+FROM python:3.12-slim
 
 # Install Docker CLI (for spawning agent containers) and git
 RUN apt-get update && apt-get install -y \
@@ -19,19 +19,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package*.json ./
+# Copy project definition and install dependencies
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir .
 
-# Install production dependencies only
-RUN npm ci --omit=dev
-
-# Copy source and build
-COPY tsconfig.json ./
-COPY src/ ./src/
+# Copy source
+COPY codeclaw/ ./codeclaw/
 COPY container/ ./container/
 COPY groups/ ./groups/
-
-RUN npx tsc
 
 # Create data directories
 RUN mkdir -p /data /app/data /app/store
@@ -53,7 +48,7 @@ if ! docker image inspect codeclaw-agent:latest > /dev/null 2>&1; then
 fi
 
 # Start the host process
-exec node /app/dist/index.js
+exec python -m codeclaw.main
 ENTRYPOINT
 
 RUN chmod +x /app/start.sh

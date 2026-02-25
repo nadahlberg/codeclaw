@@ -1,9 +1,9 @@
 # CodeClaw Agent Container
-# Runs Claude Agent SDK in isolated Linux VM with GitHub integration
+# Runs Claude Agent SDK (Python) in isolated Linux VM with GitHub integration
 
 FROM node:22-slim
 
-# Install system dependencies for Chromium and GitHub CLI
+# Install system dependencies for Chromium, GitHub CLI, and Python
 RUN apt-get update && apt-get install -y \
     chromium \
     fonts-liberation \
@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y \
     libxshmfence1 \
     curl \
     git \
+    python3 \
+    python3-pip \
+    python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
 # Install GitHub CLI
@@ -42,24 +45,23 @@ RUN git config --system user.name "CodeClaw AI" \
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Install agent-browser and claude-code globally
+# Install agent-browser and claude-code globally (SDK requires the CLI)
 RUN npm install -g agent-browser @anthropic-ai/claude-code
 
 # Create app directory
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY agent-runner/package*.json ./
+# Copy requirements first for better caching
+COPY agent_runner/requirements.txt ./requirements.txt
 
-# Install dependencies
-RUN npm install
+# Install Python dependencies
+RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
-# Copy source code
-COPY agent-runner/ ./
+# Copy Python source code
+COPY agent_runner/ ./
 
-# Build TypeScript at image build time (immutable — agents cannot modify the runner)
-RUN npm run build \
-    && chmod -R a-w /app/dist
+# Make source read-only (agents cannot modify the runner)
+RUN chmod -R a-w /app/*.py
 
 # Create workspace directories
 RUN mkdir -p /workspace/group /workspace/global /workspace/extra /workspace/repo /workspace/ipc/messages /workspace/ipc/tasks /workspace/ipc/input \
@@ -74,6 +76,6 @@ USER node
 # Set working directory to group workspace
 WORKDIR /workspace/group
 
-# Entry point: secrets arrive via stdin JSON, piped directly to node (never written to disk)
+# Entry point: secrets arrive via stdin JSON, piped directly to python (never written to disk)
 # Follow-up messages arrive via IPC files in /workspace/ipc/input/
-ENTRYPOINT ["node", "/app/dist/index.js"]
+ENTRYPOINT ["python3", "/app/main.py"]
