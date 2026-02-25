@@ -61,7 +61,12 @@ systemctl --user restart codeclaw
 
 ## Pre-commit
 
-Always run `ruff check codeclaw/` before committing and fix any errors. Use `ruff check --fix codeclaw/` for auto-fixable issues.
+Always run these before committing and fix any errors:
+
+```bash
+ruff check codeclaw/             # Lint (use --fix for auto-fixable issues)
+python -m pytest                 # Tests
+```
 
 ## Container Build Cache
 
