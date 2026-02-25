@@ -43,25 +43,16 @@ describe('fetch-upstream.sh', () => {
       cwd: seedDir,
       stdio: 'pipe',
     });
+    // Ensure branch is called "main" regardless of git defaults
+    execSync('git branch -M main', { cwd: seedDir, stdio: 'pipe' });
     execSync(`git remote add origin ${upstreamBareDir}`, {
       cwd: seedDir,
       stdio: 'pipe',
     });
-    execSync('git push origin main 2>/dev/null || git push origin master', {
+    execSync('git push origin main', {
       cwd: seedDir,
       stdio: 'pipe',
-      shell: '/bin/bash',
     });
-
-    // Rename the default branch to main in the bare repo if needed
-    try {
-      execSync('git symbolic-ref HEAD refs/heads/main', {
-        cwd: upstreamBareDir,
-        stdio: 'pipe',
-      });
-    } catch {
-      // Already on main
-    }
 
     fs.rmSync(seedDir, { recursive: true, force: true });
 
