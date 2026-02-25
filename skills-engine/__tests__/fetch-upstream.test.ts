@@ -8,7 +8,7 @@ describe('fetch-upstream.sh', () => {
   let projectDir: string;
   let upstreamBareDir: string;
   const scriptPath = path.resolve(
-    'skills/update/scripts/fetch-upstream.sh',
+    '.claude/skills/update/scripts/fetch-upstream.sh',
   );
 
   beforeEach(() => {
