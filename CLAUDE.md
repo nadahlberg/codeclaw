@@ -29,8 +29,6 @@ Single Node.js process that receives GitHub webhooks, routes events to Claude Ag
 
 | Skill | When to Use |
 |-------|-------------|
-| `/setup` | First-time installation, GitHub App creation, service configuration |
-| `/customize` | Adding integrations, changing behavior |
 | `/debug` | Container issues, logs, troubleshooting |
 | `/update` | Pull upstream changes, merge with customizations, run migrations |
 
