@@ -3,7 +3,7 @@ name: Bump version
 on:
   push:
     branches: [main]
-    paths: ['src/**', 'container/**']
+    paths: ['codeclaw/**', 'container/**']
 
 jobs:
   bump-version:
@@ -22,12 +22,20 @@ jobs:
 
       - name: Bump patch version
         run: |
-          npm version patch --no-git-tag-version
-          git add package.json package-lock.json
+          VERSION=$(python3 -c "
+          import re, pathlib
+          p = pathlib.Path('pyproject.toml')
+          text = p.read_text()
+          m = re.search(r'version\s*=\s*\"(\d+)\.(\d+)\.(\d+)\"', text)
+          major, minor, patch = m.group(1), m.group(2), int(m.group(3)) + 1
+          new_ver = f'{major}.{minor}.{patch}'
+          p.write_text(re.sub(r'(version\s*=\s*\")[\d.]+\"', rf'\g<1>{new_ver}\"', text))
+          print(new_ver)
+          ")
+          git add pyproject.toml
           git diff --cached --quiet && exit 0
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          VERSION=$(node -p "require('./package.json').version")
           git commit -m "chore: bump version to $VERSION"
           git pull --rebase
           git push
