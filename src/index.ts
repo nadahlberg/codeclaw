@@ -388,8 +388,12 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   if (chatJid.startsWith('gh:') && tokenManager) {
     try {
       const { owner, repo } = parseRepoFromJid(chatJid);
-      githubToken = await tokenManager.getTokenForRepo(owner, repo);
-      repoCheckoutPath = await prepareRepoCheckout(owner, repo, githubToken);
+      // Full token for host-side checkout; scoped token for the container.
+      // The scoped token is limited to this single repo with minimal permissions,
+      // reducing blast radius if exfiltrated via prompt injection.
+      const checkoutToken = await tokenManager.getTokenForRepo(owner, repo);
+      repoCheckoutPath = await prepareRepoCheckout(owner, repo, checkoutToken);
+      githubToken = await tokenManager.getScopedTokenForRepo(owner, repo);
     } catch (err) {
       logger.error({ err, chatJid }, 'Failed to prepare GitHub context');
     }
