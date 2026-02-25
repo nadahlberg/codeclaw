@@ -64,7 +64,7 @@ from clawcode.logger import logger
 from clawcode.models import NewMessage, RegisteredGroup
 from clawcode.router import find_channel, format_messages, format_outbound
 from clawcode.task_scheduler import SchedulerDependencies, start_scheduler_loop
-from clawcode.webhook_server import create_app
+from clawcode.webhook_server import create_app, mark_ready
 
 # Module-level state
 _sessions: dict[str, str] = {}
@@ -418,7 +418,8 @@ async def _reconciliation_loop() -> None:
         await asyncio.sleep(RECONCILIATION_INTERVAL / 1000)
 
 
-async def _async_main() -> None:
+async def _initialize(app) -> None:
+    """Heavy initialization that runs after uvicorn is already listening."""
     ensure_container_runtime_running()
     init_database()
     logger.info("Database initialized")
@@ -442,11 +443,11 @@ async def _async_main() -> None:
         logger.warning("GitHub App not configured, starting in setup mode")
         webhook_secret = secrets.token_hex(32)
 
-    # Create FastAPI app
+    # Wire up webhook processing now that we have the secret
     def on_event(event_name: str, delivery_id: str, payload: dict):
         asyncio.ensure_future(_handle_webhook_event(event_name, delivery_id, payload))
 
-    app = create_app(webhook_secret, on_event)
+    mark_ready(app, webhook_secret, on_event)
 
     # Start subsystems
     await start_scheduler_loop(SchedulerDependencies(
@@ -473,9 +474,25 @@ async def _async_main() -> None:
 
     logger.info("ClawCode running (GitHub webhook mode)", port=PORT)
 
-    # Run uvicorn
+
+async def _async_main() -> None:
+    # Create app and start listening immediately so Fly.io health checks pass
+    # while the rest of the system initializes in the background.
+    app = create_app()
+
     config = uvicorn.Config(app, host="0.0.0.0", port=PORT, log_level="warning")
     server = uvicorn.Server(config)
+
+    init_task = asyncio.create_task(_initialize(app))
+
+    def _on_init_done(task: asyncio.Task) -> None:
+        exc = task.exception()
+        if exc:
+            logger.error("Initialization failed, shutting down", error=str(exc))
+            server.should_exit = True
+
+    init_task.add_done_callback(_on_init_done)
+
     await server.serve()
 
 
