@@ -1,4 +1,5 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
@@ -301,11 +302,12 @@ async function prepareRepoCheckout(
 ): Promise<string> {
   const repoDir = path.join(DATA_DIR, 'repos', `${owner}--${repo}`);
 
+  const cloneUrl = `https://x-access-token:${token}@github.com/${owner}/${repo}.git`;
+
   if (!fs.existsSync(path.join(repoDir, '.git'))) {
     // Clone the repo
     fs.mkdirSync(path.dirname(repoDir), { recursive: true });
-    const cloneUrl = `https://x-access-token:${token}@github.com/${owner}/${repo}.git`;
-    execSync(`git clone --depth 50 "${cloneUrl}" "${repoDir}"`, {
+    execFileSync('git', ['clone', '--depth', '50', cloneUrl, repoDir], {
       timeout: 120000,
       stdio: 'pipe',
     });
@@ -313,15 +315,15 @@ async function prepareRepoCheckout(
   } else {
     // Fetch latest
     try {
-      execSync(
-        `git -C "${repoDir}" remote set-url origin "https://x-access-token:${token}@github.com/${owner}/${repo}.git"`,
-        { timeout: 10000, stdio: 'pipe' },
-      );
-      execSync(`git -C "${repoDir}" fetch --depth 50 origin`, {
+      execFileSync('git', ['-C', repoDir, 'remote', 'set-url', 'origin', cloneUrl], {
+        timeout: 10000,
+        stdio: 'pipe',
+      });
+      execFileSync('git', ['-C', repoDir, 'fetch', '--depth', '50', 'origin'], {
         timeout: 60000,
         stdio: 'pipe',
       });
-      execSync(`git -C "${repoDir}" reset --hard origin/HEAD`, {
+      execFileSync('git', ['-C', repoDir, 'reset', '--hard', 'origin/HEAD'], {
         timeout: 10000,
         stdio: 'pipe',
       });
@@ -332,8 +334,8 @@ async function prepareRepoCheckout(
 
   // Set git config for bot identity (token-based auth for pushes)
   try {
-    execSync(`git -C "${repoDir}" config user.name "CodeClaw AI"`, { stdio: 'pipe' });
-    execSync(`git -C "${repoDir}" config user.email "codeclaw[bot]@users.noreply.github.com"`, { stdio: 'pipe' });
+    execFileSync('git', ['-C', repoDir, 'config', 'user.name', 'CodeClaw AI'], { stdio: 'pipe' });
+    execFileSync('git', ['-C', repoDir, 'config', 'user.email', 'codeclaw[bot]@users.noreply.github.com'], { stdio: 'pipe' });
   } catch {
     // Non-fatal
   }
@@ -623,7 +625,7 @@ async function main(): Promise<void> {
 
     startWebhookServer({
       port: PORT,
-      webhookSecret: 'setup-mode',
+      webhookSecret: crypto.randomBytes(32).toString('hex'),
       onEvent: () => {}, // No events in setup mode
       getSetupPageHtml: () => {
         const webhookUrl = process.env.WEBHOOK_URL || `http://localhost:${PORT}`;

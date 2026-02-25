@@ -61,17 +61,21 @@ This is the **main channel**, which has elevated privileges.
 
 ## Container Mounts
 
-Main has read-only access to the project and read-write access to its group folder:
+Main has narrow mounts for operational data (not the full project root):
 
 | Container Path | Host Path | Access |
 |----------------|-----------|--------|
-| `/workspace/project` | Project root | read-only |
 | `/workspace/group` | `groups/main/` | read-write |
+| `/workspace/store` | `store/` | read-only |
+| `/workspace/data` | `data/` | read-write |
+| `/workspace/groups` | `groups/` | read-write |
 
 Key paths inside the container:
-- `/workspace/project/store/messages.db` - SQLite database
-- `/workspace/project/store/messages.db` (registered_groups table) - Group config
-- `/workspace/project/groups/` - All group folders
+- `/workspace/store/messages.db` - SQLite database
+- `/workspace/data/registered_groups.json` - Group config
+- `/workspace/groups/` - All group folders
+
+To inspect or modify CodeClaw's own source code, clone the repo from GitHub rather than accessing host files directly.
 
 ---
 
@@ -108,7 +112,7 @@ Then wait a moment and re-read `available_groups.json`.
 **Fallback**: Query the SQLite database directly:
 
 ```bash
-sqlite3 /workspace/project/store/messages.db "
+sqlite3 /workspace/store/messages.db "
   SELECT jid, name, last_message_time
   FROM chats
   WHERE jid LIKE '%@g.us' AND jid != '__group_sync__'
@@ -119,7 +123,7 @@ sqlite3 /workspace/project/store/messages.db "
 
 ### Registered Groups Config
 
-Groups are registered in `/workspace/project/data/registered_groups.json`:
+Groups are registered in `/workspace/data/registered_groups.json`:
 
 ```json
 {
@@ -149,10 +153,10 @@ Fields:
 ### Adding a Group
 
 1. Query the database to find the group's JID
-2. Read `/workspace/project/data/registered_groups.json`
+2. Read `/workspace/data/registered_groups.json`
 3. Add the new group entry with `containerConfig` if needed
 4. Write the updated JSON back
-5. Create the group folder: `/workspace/project/groups/{folder-name}/`
+5. Create the group folder: `/workspace/groups/{folder-name}/`
 6. Optionally create an initial `CLAUDE.md` for the group
 
 Example folder name conventions:
@@ -188,20 +192,20 @@ The directory will appear at `/workspace/extra/webapp` in that group's container
 
 ### Removing a Group
 
-1. Read `/workspace/project/data/registered_groups.json`
+1. Read `/workspace/data/registered_groups.json`
 2. Remove the entry for that group
 3. Write the updated JSON back
 4. The group folder and its files remain (don't delete them)
 
 ### Listing Groups
 
-Read `/workspace/project/data/registered_groups.json` and format it nicely.
+Read `/workspace/data/registered_groups.json` and format it nicely.
 
 ---
 
 ## Global Memory
 
-You can read and write to `/workspace/project/groups/global/CLAUDE.md` for facts that should apply to all groups. Only update global memory when explicitly asked to "remember this globally" or similar.
+You can read and write to `/workspace/groups/global/CLAUDE.md` for facts that should apply to all groups. Only update global memory when explicitly asked to "remember this globally" or similar.
 
 ---
 
