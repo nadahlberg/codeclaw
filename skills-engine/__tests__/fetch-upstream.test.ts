@@ -7,8 +7,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 describe('fetch-upstream.sh', () => {
   let projectDir: string;
   let upstreamBareDir: string;
+  // Source location in the repo catalog — the beforeEach copies this into the
+  // temp project's .claude/skills/ where the script expects to run from.
   const scriptPath = path.resolve(
-    '.claude/skills/update/scripts/fetch-upstream.sh',
+    'skills/update/scripts/fetch-upstream.sh',
   );
 
   beforeEach(() => {
@@ -41,25 +43,16 @@ describe('fetch-upstream.sh', () => {
       cwd: seedDir,
       stdio: 'pipe',
     });
+    // Ensure branch is called "main" regardless of git defaults
+    execSync('git branch -M main', { cwd: seedDir, stdio: 'pipe' });
     execSync(`git remote add origin ${upstreamBareDir}`, {
       cwd: seedDir,
       stdio: 'pipe',
     });
-    execSync('git push origin main 2>/dev/null || git push origin master', {
+    execSync('git push origin main', {
       cwd: seedDir,
       stdio: 'pipe',
-      shell: '/bin/bash',
     });
-
-    // Rename the default branch to main in the bare repo if needed
-    try {
-      execSync('git symbolic-ref HEAD refs/heads/main', {
-        cwd: upstreamBareDir,
-        stdio: 'pipe',
-      });
-    } catch {
-      // Already on main
-    }
 
     fs.rmSync(seedDir, { recursive: true, force: true });
 
@@ -170,10 +163,10 @@ describe('fetch-upstream.sh', () => {
     fs.rmSync(status.TEMP_DIR, { recursive: true, force: true });
   });
 
-  it('uses origin when it points to qwibitai/nanoclaw', () => {
-    // Set origin to a URL containing qwibitai/nanoclaw
+  it('uses origin when it points to nadahlberg/codeclaw', () => {
+    // Set origin to a URL containing nadahlberg/codeclaw
     execSync(
-      `git remote add origin https://github.com/qwibitai/nanoclaw.git`,
+      `git remote add origin https://github.com/nadahlberg/codeclaw.git`,
       { cwd: projectDir, stdio: 'pipe' },
     );
     // We can't actually fetch from GitHub in tests, but we can verify
@@ -218,7 +211,7 @@ describe('fetch-upstream.sh', () => {
       encoding: 'utf-8',
     });
     expect(remotes).toContain('upstream');
-    expect(remotes).toContain('qwibitai/nanoclaw');
+    expect(remotes).toContain('nadahlberg/codeclaw');
   });
 
   it('extracts files to temp dir correctly', () => {

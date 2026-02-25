@@ -76,19 +76,50 @@ export class GitHubTokenManager {
 
   /** Get an installation token for a specific repo. Looks up the installation first. */
   async getTokenForRepo(owner: string, repo: string): Promise<string> {
-    const key = `${owner}/${repo}`;
-    let installationId = this.installationForRepo.get(key);
-
-    if (!installationId) {
-      const { data } = await this.appOctokit.apps.getRepoInstallation({
-        owner,
-        repo,
-      });
-      installationId = data.id;
-      this.installationForRepo.set(key, installationId);
-    }
-
+    const installationId = await this.resolveInstallationId(owner, repo);
     return this.getInstallationToken(installationId);
+  }
+
+  /**
+   * Get a token scoped to a single repo with minimal permissions.
+   * Use this for tokens passed into agent containers — limits blast radius
+   * if the token is exfiltrated via prompt injection.
+   */
+  async getScopedTokenForRepo(owner: string, repo: string): Promise<string> {
+    const installationId = await this.resolveInstallationId(owner, repo);
+
+    const auth = createAppAuth({
+      appId: this.config.appId,
+      privateKey: this.config.privateKey,
+      installationId,
+    });
+
+    const { token } = await auth({
+      type: 'installation',
+      repositories: [repo],
+      permissions: {
+        contents: 'write',
+        pull_requests: 'write',
+        issues: 'write',
+        metadata: 'read',
+      },
+    });
+
+    // Scoped tokens are not cached — they're single-use per container run
+    return token;
+  }
+
+  private async resolveInstallationId(owner: string, repo: string): Promise<number> {
+    const key = `${owner}/${repo}`;
+    const cached = this.installationForRepo.get(key);
+    if (cached !== undefined) return cached;
+
+    const { data } = await this.appOctokit.apps.getRepoInstallation({
+      owner,
+      repo,
+    });
+    this.installationForRepo.set(key, data.id);
+    return data.id;
   }
 
   /** Get an Octokit instance authenticated for a specific repo. */

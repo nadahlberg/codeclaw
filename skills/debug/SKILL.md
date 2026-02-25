@@ -21,7 +21,9 @@ src/container-runner.ts               container/agent-runner/
     ├── groups/{folder} ───────────> /workspace/group
     ├── data/ipc/{folder} ────────> /workspace/ipc
     ├── data/sessions/{folder}/.claude/ ──> /home/node/.claude/ (isolated per-group)
-    └── (main only) project root ──> /workspace/project
+    ├── (main only) store/ ──────> /workspace/store (ro)
+    ├── (main only) data/ ───────> /workspace/data (rw)
+    └── (main only) groups/ ─────> /workspace/groups (rw)
 ```
 
 **Important:** The container runs as user `node` with `HOME=/home/node`. Session files must be mounted to `/home/node/.claude/` (not `/root/.claude/`) for session resumption to work.
@@ -115,15 +117,17 @@ docker run --rm --entrypoint /bin/bash codeclaw-agent:latest -c 'ls -la /workspa
 Expected structure:
 ```
 /workspace/
-├── env-dir/env           # Environment file (CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY)
 ├── group/                # Current group folder (cwd)
-├── project/              # Project root (main channel only)
-├── global/               # Global CLAUDE.md (non-main only)
+├── store/                # Message database (main only, read-only)
+├── data/                 # Config data - registered_groups.json (main only, read-write)
+├── groups/               # All group folders (main only, read-write)
+├── global/               # Global CLAUDE.md (non-main only, read-only)
 ├── ipc/                  # Inter-process communication
 │   ├── messages/         # Outgoing WhatsApp messages
 │   ├── tasks/            # Scheduled task commands
 │   ├── current_tasks.json    # Read-only: scheduled tasks visible to this group
 │   └── available_groups.json # Read-only: WhatsApp groups for activation (main only)
+├── repo/                 # Git repository checkout (GitHub events only)
 └── extra/                # Additional custom mounts
 ```
 

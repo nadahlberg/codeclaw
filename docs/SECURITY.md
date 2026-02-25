@@ -40,9 +40,9 @@ private_key, .secret
 - Container path validation (rejects `..` and absolute paths)
 - `nonMainReadOnly` option forces read-only for non-main groups
 
-**Read-Only Project Root:**
+**Narrow Mounts (No Project Root):**
 
-The main group's project root is mounted read-only. Writable paths the agent needs (group folder, IPC, `.claude/`) are mounted separately. This prevents the agent from modifying host application code (`src/`, `dist/`, `package.json`, etc.) which would bypass the sandbox entirely on next restart.
+The main group does NOT get the full project root. Instead, it receives narrow mounts for operational data only (`store/`, `data/`, `groups/`). This prevents exposure of `.env`, `src/`, `node_modules/`, and other host files. If the agent needs to inspect or modify CodeClaw itself, it can clone the repo from GitHub.
 
 ### 3. Session Isolation
 
@@ -86,11 +86,11 @@ const allowedVars = ['CLAUDE_CODE_OAUTH_TOKEN', 'ANTHROPIC_API_KEY'];
 
 | Capability | Main Group | Non-Main Group |
 |------------|------------|----------------|
-| Project root access | `/workspace/project` (ro) | None |
+| Operational data | `store/` (ro), `data/` (rw), `groups/` (rw) | None |
 | Group folder | `/workspace/group` (rw) | `/workspace/group` (rw) |
-| Global memory | Implicit via project | `/workspace/global` (ro) |
+| Global memory | Via `/workspace/groups/global/` | `/workspace/global` (ro) |
 | Additional mounts | Configurable | Read-only unless allowed |
-| Network access | Unrestricted | Unrestricted |
+| Network access | Unrestricted (cloud metadata blocked) | Unrestricted (cloud metadata blocked) |
 | MCP tools | All | All |
 
 ## Security Architecture Diagram

@@ -22,6 +22,18 @@ export function getSetupPageHtml(webhookUrl: string): string | null {
   const manifest = buildAppManifest(webhookUrl);
   const manifestJson = JSON.stringify(manifest);
 
+  const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|::1)(:|\/|$)/.test(webhookUrl);
+  const localhostNote = isLocalhost
+    ? `<div class="note">
+        <strong>Running on localhost</strong> &mdash; the GitHub App will be created
+        without a webhook URL since GitHub cannot reach localhost. After creating
+        the App, configure a public URL (e.g. via <code>ngrok</code>,
+        Tailscale Funnel, or a cloud deploy) and set the <code>WEBHOOK_URL</code>
+        environment variable, then update the webhook URL in your
+        <a href="https://github.com/settings/apps">GitHub App settings</a>.
+      </div>`
+    : '';
+
   return `<!DOCTYPE html>
 <html>
 <head><title>CodeClaw Setup</title>
@@ -31,11 +43,13 @@ export function getSetupPageHtml(webhookUrl: string): string | null {
   .btn { background: #2ea44f; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; }
   .btn:hover { background: #2c974b; }
   code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; }
+  .note { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 12px 16px; margin: 16px 0; font-size: 14px; }
 </style>
 </head>
 <body>
   <h1>CodeClaw Setup</h1>
   <p>Click below to create a GitHub App with the correct permissions and webhook configuration.</p>
+  ${localhostNote}
   <form action="https://github.com/settings/apps/new" method="post">
     <input type="hidden" name="manifest" value='${manifestJson.replace(/'/g, '&#39;')}'>
     <button type="submit" class="btn">Create GitHub App</button>

@@ -70,32 +70,43 @@ function buildVolumeMounts(
     });
   }
 
+  // Every group gets its own folder as the working directory
+  mounts.push({
+    hostPath: groupDir,
+    containerPath: '/workspace/group',
+    readonly: false,
+  });
+
   if (isMain) {
-    // Main gets the project root read-only. Writable paths the agent needs
-    // (group folder, IPC, .claude/) are mounted separately below.
-    // Read-only prevents the agent from modifying host application code
-    // (src/, dist/, package.json, etc.) which would bypass the sandbox
-    // entirely on next restart.
+    // Main gets narrow mounts for operational data instead of the full
+    // project root. This prevents exposure of .env, src/, node_modules/,
+    // and other host files. If the agent needs to inspect or modify
+    // CodeClaw itself, it can clone the repo from GitHub.
+    const storeDir = path.join(projectRoot, 'store');
+    if (fs.existsSync(storeDir)) {
+      mounts.push({
+        hostPath: storeDir,
+        containerPath: '/workspace/store',
+        readonly: true,
+      });
+    }
+
+    const dataDir = path.join(projectRoot, 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
     mounts.push({
-      hostPath: projectRoot,
-      containerPath: '/workspace/project',
-      readonly: true,
+      hostPath: dataDir,
+      containerPath: '/workspace/data',
+      readonly: false,
     });
 
-    // Main also gets its group folder as the working directory
+    // All group folders (main needs to read other groups' CLAUDE.md and
+    // create new group folders when registering groups)
     mounts.push({
-      hostPath: groupDir,
-      containerPath: '/workspace/group',
+      hostPath: GROUPS_DIR,
+      containerPath: '/workspace/groups',
       readonly: false,
     });
   } else {
-    // Other groups only get their own folder
-    mounts.push({
-      hostPath: groupDir,
-      containerPath: '/workspace/group',
-      readonly: false,
-    });
-
     // Global memory directory (read-only for non-main)
     // Only directory mounts are supported, not file mounts
     const globalDir = path.join(GROUPS_DIR, 'global');
@@ -163,19 +174,10 @@ function buildVolumeMounts(
     readonly: false,
   });
 
-  // Copy agent-runner source into a per-group writable location so agents
-  // can customize it (add tools, change behavior) without affecting other
-  // groups. Recompiled on container startup via entrypoint.sh.
-  const agentRunnerSrc = path.join(projectRoot, 'container', 'agent-runner', 'src');
-  const groupAgentRunnerDir = path.join(DATA_DIR, 'sessions', group.folder, 'agent-runner-src');
-  if (!fs.existsSync(groupAgentRunnerDir) && fs.existsSync(agentRunnerSrc)) {
-    fs.cpSync(agentRunnerSrc, groupAgentRunnerDir, { recursive: true });
-  }
-  mounts.push({
-    hostPath: groupAgentRunnerDir,
-    containerPath: '/app/src',
-    readonly: false,
-  });
+  // Agent-runner is pre-compiled into the container image (immutable).
+  // Agents that need to customize CodeClaw can clone the repo from GitHub,
+  // make changes, push, and redeploy — rather than hot-patching the running
+  // runner, which was a guardrail bypass vector.
 
   // Additional mounts validated against external allowlist (tamper-proof from containers)
   if (group.containerConfig?.additionalMounts) {
@@ -208,6 +210,17 @@ export function addGitHubToken(secrets: Record<string, string>, token: string): 
 
 function buildContainerArgs(mounts: VolumeMount[], containerName: string): string[] {
   const args: string[] = ['run', '-i', '--rm', '--name', containerName];
+
+  // Container hardening
+  args.push(
+    '--cap-drop=ALL',
+    '--cap-add=SYS_ADMIN',          // Required for Chromium sandbox (user namespaces)
+    '--security-opt=no-new-privileges',
+    '--pids-limit=512',
+    // Block cloud metadata endpoints (prevents credential theft on cloud VMs)
+    '--add-host=metadata.google.internal:0.0.0.0',
+    '--add-host=169.254.169.254:0.0.0.0',
+  );
 
   // Pass host timezone so container's local time matches the user's
   args.push('-e', `TZ=${TIMEZONE}`);

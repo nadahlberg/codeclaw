@@ -57,16 +57,13 @@ RUN npm install
 # Copy source code
 COPY agent-runner/ ./
 
-# Build TypeScript
-RUN npm run build
+# Build TypeScript at image build time (immutable — agents cannot modify the runner)
+RUN npm run build \
+    && chmod -R a-w /app/dist
 
 # Create workspace directories
-RUN mkdir -p /workspace/group /workspace/global /workspace/extra /workspace/repo /workspace/ipc/messages /workspace/ipc/tasks /workspace/ipc/input
-
-# Create entrypoint script
-# Secrets are passed via stdin JSON — temp file is deleted immediately after Node reads it
-# Follow-up messages arrive via IPC files in /workspace/ipc/input/
-RUN printf '#!/bin/bash\nset -e\ncd /app && npx tsc --outDir /tmp/dist 2>&1 >&2\nln -s /app/node_modules /tmp/dist/node_modules\nchmod -R a-w /tmp/dist\ncat > /tmp/input.json\nnode /tmp/dist/index.js < /tmp/input.json\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+RUN mkdir -p /workspace/group /workspace/global /workspace/extra /workspace/repo /workspace/ipc/messages /workspace/ipc/tasks /workspace/ipc/input \
+    /workspace/store /workspace/data /workspace/groups
 
 # Set ownership to node user (non-root) for writable directories
 RUN chown -R node:node /workspace && chmod 777 /home/node
@@ -77,5 +74,6 @@ USER node
 # Set working directory to group workspace
 WORKDIR /workspace/group
 
-# Entry point reads JSON from stdin, outputs JSON to stdout
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Entry point: secrets arrive via stdin JSON, piped directly to node (never written to disk)
+# Follow-up messages arrive via IPC files in /workspace/ipc/input/
+ENTRYPOINT ["node", "/app/dist/index.js"]
