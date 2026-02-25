@@ -1,4 +1,4 @@
-# CodeClaw Specification
+# ClawCode Specification
 
 A GitHub AI coding agent powered by Claude, running in isolated containers. Responds to issues, pull requests, and review comments via webhooks.
 
@@ -64,7 +64,7 @@ A GitHub AI coding agent powered by Claude, running in isolated containers. Resp
 │  │    • Read, Write, Edit, Glob, Grep (file operations)          │   │
 │  │    • WebSearch, WebFetch (internet access)                    │   │
 │  │    • agent-browser (browser automation)                       │   │
-│  │    • mcp__codeclaw__* (scheduler tools via IPC)               │   │
+│  │    • mcp__clawcode__* (scheduler tools via IPC)               │   │
 │  │                                                               │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                      │
@@ -88,7 +88,7 @@ A GitHub AI coding agent powered by Claude, running in isolated containers. Resp
 ## Folder Structure
 
 ```
-codeclaw/
+clawcode/
 ├── CLAUDE.md                      # Project context for Claude Code
 ├── docs/
 │   ├── SPEC.md                    # This specification document
@@ -175,11 +175,11 @@ codeclaw/
 │   └── ipc/                       # Container IPC (messages/, tasks/)
 │
 ├── logs/                          # Runtime logs (gitignored)
-│   ├── codeclaw.log               # Host stdout
-│   └── codeclaw.error.log         # Host stderr
+│   ├── clawcode.log               # Host stdout
+│   └── clawcode.error.log         # Host stderr
 │
 └── launchd/
-    └── com.codeclaw.plist         # macOS service configuration
+    └── com.clawcode.plist         # macOS service configuration
 ```
 
 ---
@@ -189,7 +189,7 @@ codeclaw/
 Configuration constants are in `src/config.ts`:
 
 ```typescript
-export const ASSISTANT_NAME = process.env.ASSISTANT_NAME || 'CodeClaw';
+export const ASSISTANT_NAME = process.env.ASSISTANT_NAME || 'ClawCode';
 export const SCHEDULER_POLL_INTERVAL = 60000;
 export const RECONCILIATION_INTERVAL = 60000;
 
@@ -200,7 +200,7 @@ export const GROUPS_DIR = path.resolve(PROJECT_ROOT, 'groups');
 export const DATA_DIR = path.resolve(PROJECT_ROOT, 'data');
 
 // Container configuration
-export const CONTAINER_IMAGE = process.env.CONTAINER_IMAGE || 'codeclaw-agent:latest';
+export const CONTAINER_IMAGE = process.env.CONTAINER_IMAGE || 'clawcode-agent:latest';
 export const CONTAINER_TIMEOUT = parseInt(process.env.CONTAINER_TIMEOUT || '1800000', 10); // 30min
 export const IDLE_TIMEOUT = parseInt(process.env.IDLE_TIMEOUT || '1800000', 10); // 30min
 export const MAX_CONCURRENT_CONTAINERS = Math.max(1, parseInt(process.env.MAX_CONCURRENT_CONTAINERS || '5', 10) || 5);
@@ -218,7 +218,7 @@ Required environment variables (stored in `.env`):
 ```bash
 GITHUB_APP_ID=12345
 GITHUB_WEBHOOK_SECRET=your-webhook-secret
-GITHUB_PRIVATE_KEY_PATH=~/.config/codeclaw/github-app.pem
+GITHUB_PRIVATE_KEY_PATH=~/.config/clawcode/github-app.pem
 ```
 
 ### Claude Authentication
@@ -249,7 +249,7 @@ Additional mounts appear at `/workspace/extra/{containerPath}` inside the contai
 
 ## Memory System
 
-CodeClaw uses a hierarchical memory system based on CLAUDE.md files.
+ClawCode uses a hierarchical memory system based on CLAUDE.md files.
 
 ### Memory Hierarchy
 
@@ -322,7 +322,7 @@ Sessions enable conversation continuity — Claude remembers previous interactio
    ├── cwd: groups/{group-name}/
    ├── prompt: event context + instructions
    ├── resume: session_id (for continuity)
-   └── mcpServers: codeclaw (scheduler, send_message)
+   └── mcpServers: clawcode (scheduler, send_message)
    │
    ▼
 7. Claude processes event:
@@ -353,7 +353,7 @@ Sessions enable conversation continuity — Claude remembers previous interactio
 
 ### Per-Repo Access Control
 
-Create `.github/codeclaw.yml` in any repo:
+Create `.github/clawcode.yml` in any repo:
 
 ```yaml
 access:
@@ -368,7 +368,7 @@ Permission levels: `admin` > `maintain` > `write` > `triage` > `read` > `none`
 
 ## Scheduled Tasks
 
-CodeClaw has a built-in scheduler that runs tasks as full agents in their group's context.
+ClawCode has a built-in scheduler that runs tasks as full agents in their group's context.
 
 ### How Scheduling Works
 
@@ -389,9 +389,9 @@ CodeClaw has a built-in scheduler that runs tasks as full agents in their group'
 
 ## MCP Servers
 
-### CodeClaw MCP (built-in)
+### ClawCode MCP (built-in)
 
-The `codeclaw` MCP server is created dynamically per agent call with the current group's context.
+The `clawcode` MCP server is created dynamically per agent call with the current group's context.
 
 **Available Tools:**
 | Tool | Purpose |
@@ -413,7 +413,7 @@ The `codeclaw` MCP server is created dynamically per agent call with the current
 
 ```bash
 git clone <your-fork-url>
-cd codeclaw
+cd clawcode
 npm install
 npm run build
 ./container/build.sh
@@ -423,7 +423,7 @@ npm start
 
 ### Startup Sequence
 
-When CodeClaw starts, it:
+When ClawCode starts, it:
 1. **Ensures container runtime is running** — Automatically starts it if needed; kills orphaned containers from previous runs
 2. Initializes the SQLite database (runs migrations)
 3. Loads state from SQLite (registered repos, sessions)
@@ -435,17 +435,17 @@ When CodeClaw starts, it:
 
 ```bash
 # macOS (launchd)
-launchctl load ~/Library/LaunchAgents/com.codeclaw.plist
-launchctl unload ~/Library/LaunchAgents/com.codeclaw.plist
-launchctl kickstart -k gui/$(id -u)/com.codeclaw  # restart
+launchctl load ~/Library/LaunchAgents/com.clawcode.plist
+launchctl unload ~/Library/LaunchAgents/com.clawcode.plist
+launchctl kickstart -k gui/$(id -u)/com.clawcode  # restart
 
 # Linux (systemd)
-systemctl --user start codeclaw
-systemctl --user stop codeclaw
-systemctl --user restart codeclaw
+systemctl --user start clawcode
+systemctl --user stop clawcode
+systemctl --user restart clawcode
 
 # View logs
-tail -f logs/codeclaw.log
+tail -f logs/clawcode.log
 ```
 
 ---
@@ -483,7 +483,7 @@ GitHub events could contain malicious instructions attempting to manipulate Clau
 | Credential | Storage Location | Notes |
 |------------|------------------|-------|
 | Claude Auth | data/sessions/{group}/.claude/ | Per-group isolation |
-| GitHub App Key | ~/.config/codeclaw/github-app.pem | Host only, never mounted |
+| GitHub App Key | ~/.config/clawcode/github-app.pem | Host only, never mounted |
 
 ---
 
@@ -496,12 +496,12 @@ GitHub events could contain malicious instructions attempting to manipulate Clau
 | No response to events | Service not running | Check service status |
 | "Container exited with code 1" | Container runtime failed | Check logs |
 | Session not continuing | Session ID not saved | Check SQLite: `sqlite3 store/messages.db "SELECT * FROM sessions"` |
-| Permission denied | User lacks required permission level | Check `.github/codeclaw.yml` |
+| Permission denied | User lacks required permission level | Check `.github/clawcode.yml` |
 
 ### Log Locations
 
-- `logs/codeclaw.log` - stdout
-- `logs/codeclaw.error.log` - stderr
+- `logs/clawcode.log` - stdout
+- `logs/clawcode.error.log` - stderr
 - `groups/{folder}/logs/container-*.log` - Per-container logs
 
 ### Debug Mode

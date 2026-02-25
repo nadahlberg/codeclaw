@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from codeclaw.logger import logger
+from clawcode.logger import logger
 
 
 def read_env_file(keys: list[str], env_path: Path | None = None) -> dict[str, str]:

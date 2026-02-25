@@ -1,4 +1,4 @@
-"""In-process MCP tools for CodeClaw.
+"""In-process MCP tools for ClawCode.
 
 Replaces the stdio MCP server (ipc-mcp-stdio.ts) with in-process tools
 using the Python SDK's @tool decorator and create_sdk_mcp_server().
@@ -521,7 +521,7 @@ def create_ipc_tools(chat_jid: str, group_folder: str, is_main: bool) -> Any:
         }
 
     return create_sdk_mcp_server(
-        name="codeclaw",
+        name="clawcode",
         tools=[
             send_message,
             schedule_task,

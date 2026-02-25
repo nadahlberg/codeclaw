@@ -15,11 +15,11 @@ from typing import Any, Callable, Coroutine
 
 from croniter import croniter
 
-from codeclaw.config import DATA_DIR, IPC_POLL_INTERVAL, MAIN_GROUP_FOLDER
-from codeclaw.db import create_task, delete_task, get_task_by_id, update_task
-from codeclaw.group_folder import is_valid_group_folder
-from codeclaw.logger import logger
-from codeclaw.models import RegisteredGroup, ScheduledTask
+from clawcode.config import DATA_DIR, IPC_POLL_INTERVAL, MAIN_GROUP_FOLDER
+from clawcode.db import create_task, delete_task, get_task_by_id, update_task
+from clawcode.group_folder import is_valid_group_folder
+from clawcode.logger import logger
+from clawcode.models import RegisteredGroup, ScheduledTask
 
 
 class IpcDeps:

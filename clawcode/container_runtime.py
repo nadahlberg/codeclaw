@@ -1,4 +1,4 @@
-"""Container runtime abstraction for CodeClaw.
+"""Container runtime abstraction for ClawCode.
 
 All runtime-specific logic lives here so swapping runtimes means changing one file.
 """
@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import subprocess
 
-from codeclaw.logger import logger
+from clawcode.logger import logger
 
 CONTAINER_RUNTIME_BIN = "docker"
 
@@ -42,7 +42,7 @@ def ensure_container_runtime_running() -> None:
             "║  Agents cannot run without a container runtime. To fix:        ║\n"
             "║  1. Ensure Docker is installed and running                     ║\n"
             "║  2. Run: docker info                                           ║\n"
-            "║  3. Restart CodeClaw                                           ║\n"
+            "║  3. Restart ClawCode                                           ║\n"
             "╚════════════════════════════════════════════════════════════════╝\n",
             flush=True,
         )
@@ -50,10 +50,10 @@ def ensure_container_runtime_running() -> None:
 
 
 def cleanup_orphans() -> None:
-    """Kill orphaned CodeClaw containers from previous runs."""
+    """Kill orphaned ClawCode containers from previous runs."""
     try:
         result = subprocess.run(
-            [CONTAINER_RUNTIME_BIN, "ps", "--filter", "name=codeclaw-", "--format", "{{.Names}}"],
+            [CONTAINER_RUNTIME_BIN, "ps", "--filter", "name=clawcode-", "--format", "{{.Names}}"],
             capture_output=True,
             text=True,
         )

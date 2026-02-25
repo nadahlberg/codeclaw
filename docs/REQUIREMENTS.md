@@ -1,4 +1,4 @@
-# CodeClaw Requirements
+# ClawCode Requirements
 
 Architecture decisions and design rationale.
 
@@ -6,7 +6,7 @@ Architecture decisions and design rationale.
 
 ## Why This Exists
 
-A lightweight, secure GitHub coding agent. CodeClaw receives webhook events from your repos, runs Claude agents in isolated containers with the repo checked out, and responds via the GitHub API (comments, reviews, pull requests).
+A lightweight, secure GitHub coding agent. ClawCode receives webhook events from your repos, runs Claude agents in isolated containers with the repo checked out, and responds via the GitHub API (comments, reviews, pull requests).
 
 ---
 
@@ -38,7 +38,7 @@ The codebase assumes you have an AI collaborator (Claude Code). It doesn't need 
 
 ### Webhook-Driven
 
-- GitHub App sends webhook events to CodeClaw's HTTP server
+- GitHub App sends webhook events to ClawCode's HTTP server
 - Events: `issues`, `issue_comment`, `pull_request`, `pull_request_review`, `pull_request_review_comment`
 - Signature verification via HMAC-SHA256
 - Idempotent processing via `processed_events` table in SQLite
@@ -53,7 +53,7 @@ The codebase assumes you have an AI collaborator (Claude Code). It doesn't need 
 
 ### Access Control
 
-- Per-repo configuration via `.github/codeclaw.yml`
+- Per-repo configuration via `.github/clawcode.yml`
 - Permission levels checked against GitHub collaborator API
 - Configurable minimum permission (default: `triage`)
 - Optional external contributor access
@@ -100,7 +100,7 @@ The codebase assumes you have an AI collaborator (Claude Code). It doesn't need 
 - One-click setup via GitHub App Manifest flow
 - Visit `/github/setup` to create the App automatically
 - Callback handler exchanges the code for App credentials
-- Private key stored at `~/.config/codeclaw/github-app.pem`
+- Private key stored at `~/.config/clawcode/github-app.pem`
 
 ---
 
@@ -116,7 +116,7 @@ The codebase assumes you have an AI collaborator (Claude Code). It doesn't need 
 ### Scheduler
 
 - Built-in scheduler runs on the host, spawns containers for task execution
-- Custom `codeclaw` MCP server (inside container) provides scheduling tools
+- Custom `clawcode` MCP server (inside container) provides scheduling tools
 - Tools: `schedule_task`, `list_tasks`, `pause_task`, `resume_task`, `cancel_task`, `send_message`
 - Tasks stored in SQLite with run history
 
@@ -146,11 +146,11 @@ The codebase assumes you have an AI collaborator (Claude Code). It doesn't need 
 
 - Single Node.js process
 - Docker required for agent containers
-- macOS: launchd service (`com.codeclaw`)
-- Linux: systemd user service (`codeclaw.service`)
+- macOS: launchd service (`com.clawcode`)
+- Linux: systemd user service (`clawcode.service`)
 
 ---
 
 ## Project Name
 
-**CodeClaw** — A GitHub AI coding agent, forked from NanoClaw.
+**ClawCode** — A GitHub AI coding agent, forked from NanoClaw.

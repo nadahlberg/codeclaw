@@ -1,4 +1,4 @@
-# CodeClaw Debug Checklist
+# ClawCode Debug Checklist
 
 ## Known Issues (2026-02-08)
 
@@ -15,23 +15,23 @@ Both timers fire at the same time, so containers always exit via hard SIGKILL (c
 
 ```bash
 # 1. Is the service running?
-launchctl list | grep codeclaw  # macOS
-systemctl --user status codeclaw  # Linux
+launchctl list | grep clawcode  # macOS
+systemctl --user status clawcode  # Linux
 
 # 2. Any running containers?
-container ls --format '{{.Names}} {{.Status}}' 2>/dev/null | grep codeclaw
+container ls --format '{{.Names}} {{.Status}}' 2>/dev/null | grep clawcode
 
 # 3. Any stopped/orphaned containers?
-container ls -a --format '{{.Names}} {{.Status}}' 2>/dev/null | grep codeclaw
+container ls -a --format '{{.Names}} {{.Status}}' 2>/dev/null | grep clawcode
 
 # 4. Recent errors in service log?
-grep -E 'ERROR|WARN' logs/codeclaw.log | tail -20
+grep -E 'ERROR|WARN' logs/clawcode.log | tail -20
 
 # 5. Is the webhook server running?
-grep -E 'Webhook server|listening' logs/codeclaw.log | tail -5
+grep -E 'Webhook server|listening' logs/clawcode.log | tail -5
 
 # 6. Are repos registered?
-grep -E 'groupCount|registered' logs/codeclaw.log | tail -3
+grep -E 'groupCount|registered' logs/clawcode.log | tail -3
 ```
 
 ## Session Transcript Branching
@@ -62,7 +62,7 @@ for i, line in enumerate(lines):
 
 ```bash
 # Check for recent timeouts
-grep -E 'Container timeout|timed out' logs/codeclaw.log | tail -10
+grep -E 'Container timeout|timed out' logs/clawcode.log | tail -10
 
 # Check container log files for the timed-out container
 ls -lt groups/*/logs/container-*.log | head -10
@@ -71,62 +71,62 @@ ls -lt groups/*/logs/container-*.log | head -10
 cat groups/<group>/logs/container-<timestamp>.log
 
 # Check if retries were scheduled and what happened
-grep -E 'Scheduling retry|retry|Max retries' logs/codeclaw.log | tail -10
+grep -E 'Scheduling retry|retry|Max retries' logs/clawcode.log | tail -10
 ```
 
 ## Agent Not Responding
 
 ```bash
 # Check if webhook events are being received
-grep -E 'webhook|event' logs/codeclaw.log | tail -10
+grep -E 'webhook|event' logs/clawcode.log | tail -10
 
 # Check if events are being processed (container spawned)
-grep -E 'Processing|Spawning container' logs/codeclaw.log | tail -10
+grep -E 'Processing|Spawning container' logs/clawcode.log | tail -10
 
 # Check the queue state — any active containers?
-grep -E 'Starting container|Container active|concurrency limit' logs/codeclaw.log | tail -10
+grep -E 'Starting container|Container active|concurrency limit' logs/clawcode.log | tail -10
 ```
 
 ## Container Mount Issues
 
 ```bash
 # Check mount validation logs (shows on container spawn)
-grep -E 'Mount validated|Mount.*REJECTED|mount' logs/codeclaw.log | tail -10
+grep -E 'Mount validated|Mount.*REJECTED|mount' logs/clawcode.log | tail -10
 
 # Verify the mount allowlist is readable
-cat ~/.config/codeclaw/mount-allowlist.json
+cat ~/.config/clawcode/mount-allowlist.json
 
 # Check group's container_config in DB
 sqlite3 store/messages.db "SELECT name, container_config FROM registered_groups;"
 
 # Test-run a container to check mounts (dry run)
-container run -i --rm --entrypoint ls codeclaw-agent:latest /workspace/extra/
+container run -i --rm --entrypoint ls clawcode-agent:latest /workspace/extra/
 ```
 
 ## GitHub App Auth Issues
 
 ```bash
 # Check for authentication errors
-grep -E 'auth\|token\|JWT\|401\|403' logs/codeclaw.log | tail -10
+grep -E 'auth\|token\|JWT\|401\|403' logs/clawcode.log | tail -10
 
 # Verify GitHub App credentials exist
 test -f .env && grep -c GITHUB_APP_ID .env
-test -f ~/.config/codeclaw/github-app.pem && echo "PEM exists" || echo "PEM missing"
+test -f ~/.config/clawcode/github-app.pem && echo "PEM exists" || echo "PEM missing"
 ```
 
 ## Service Management
 
 ```bash
 # macOS (launchd)
-launchctl kickstart -k gui/$(id -u)/com.codeclaw  # restart
-tail -f logs/codeclaw.log                          # view live logs
-launchctl bootout gui/$(id -u)/com.codeclaw        # stop
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.codeclaw.plist  # start
+launchctl kickstart -k gui/$(id -u)/com.clawcode  # restart
+tail -f logs/clawcode.log                          # view live logs
+launchctl bootout gui/$(id -u)/com.clawcode        # stop
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.clawcode.plist  # start
 
 # Linux (systemd)
-systemctl --user restart codeclaw
-journalctl --user -u codeclaw -f                   # view live logs
+systemctl --user restart clawcode
+journalctl --user -u clawcode -f                   # view live logs
 
 # Rebuild after code changes
-npm run build && launchctl kickstart -k gui/$(id -u)/com.codeclaw
+npm run build && launchctl kickstart -k gui/$(id -u)/com.clawcode
 ```

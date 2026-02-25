@@ -4,7 +4,7 @@ import re
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from codeclaw.models import Channel, NewMessage
+    from clawcode.models import Channel, NewMessage
 
 
 def escape_xml(s: str) -> str:

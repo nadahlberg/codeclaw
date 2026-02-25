@@ -9,9 +9,9 @@ from dataclasses import dataclass
 
 import httpx
 
-from codeclaw.github.auth import GitHubTokenManager
-from codeclaw.github.event_mapper import parse_repo_from_jid
-from codeclaw.logger import logger
+from clawcode.github.auth import GitHubTokenManager
+from clawcode.github.event_mapper import parse_repo_from_jid
+from clawcode.logger import logger
 
 
 @dataclass

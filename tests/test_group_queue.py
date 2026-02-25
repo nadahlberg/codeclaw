@@ -6,7 +6,7 @@ import asyncio
 
 import pytest
 
-from codeclaw.group_queue import GroupQueue
+from clawcode.group_queue import GroupQueue
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ class TestGroupQueueConcurrency:
     @pytest.mark.asyncio
     async def test_respects_global_concurrency_limit(self, queue, monkeypatch):
         """Should not exceed MAX_CONCURRENT_CONTAINERS."""
-        monkeypatch.setattr("codeclaw.group_queue.MAX_CONCURRENT_CONTAINERS", 2)
+        monkeypatch.setattr("clawcode.group_queue.MAX_CONCURRENT_CONTAINERS", 2)
 
         active_count = 0
         max_active = 0

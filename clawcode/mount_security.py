@@ -1,9 +1,9 @@
-"""Mount Security Module for CodeClaw.
+"""Mount Security Module for ClawCode.
 
 Validates additional mounts against an allowlist stored OUTSIDE the project root.
 This prevents container agents from modifying security configuration.
 
-Allowlist location: ~/.config/codeclaw/mount-allowlist.json
+Allowlist location: ~/.config/clawcode/mount-allowlist.json
 """
 
 from __future__ import annotations
@@ -13,9 +13,9 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from codeclaw.config import MOUNT_ALLOWLIST_PATH
-from codeclaw.logger import logger
-from codeclaw.models import AdditionalMount, AllowedRoot, MountAllowlist
+from clawcode.config import MOUNT_ALLOWLIST_PATH
+from clawcode.logger import logger
+from clawcode.models import AdditionalMount, AllowedRoot, MountAllowlist
 
 _cached_allowlist: MountAllowlist | None = None
 _allowlist_load_error: str | None = None

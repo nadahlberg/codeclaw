@@ -1,4 +1,4 @@
-# CodeClaw Security Model
+# ClawCode Security Model
 
 ## Trust Model
 
@@ -23,7 +23,7 @@ This is the primary security boundary. Rather than relying on application-level 
 
 ### 2. Mount Security
 
-**External Allowlist** - Mount permissions stored at `~/.config/codeclaw/mount-allowlist.json`, which is:
+**External Allowlist** - Mount permissions stored at `~/.config/clawcode/mount-allowlist.json`, which is:
 - Outside project root
 - Never mounted into containers
 - Cannot be modified by agents
@@ -42,7 +42,7 @@ private_key, .secret
 
 **Narrow Mounts (No Project Root):**
 
-The main group does NOT get the full project root. Instead, it receives narrow mounts for operational data only (`store/`, `data/`, `groups/`). This prevents exposure of `.env`, `src/`, `node_modules/`, and other host files. If the agent needs to inspect or modify CodeClaw itself, it can clone the repo from GitHub.
+The main group does NOT get the full project root. Instead, it receives narrow mounts for operational data only (`store/`, `data/`, `groups/`). This prevents exposure of `.env`, `src/`, `node_modules/`, and other host files. If the agent needs to inspect or modify ClawCode itself, it can clone the repo from GitHub.
 
 ### 3. Session Isolation
 
@@ -70,7 +70,7 @@ Messages and task operations are verified against group identity:
 - Claude auth tokens (filtered from `.env`, read-only)
 
 **NOT Mounted:**
-- GitHub App private key (`~/.config/codeclaw/github-app.pem`) - host only
+- GitHub App private key (`~/.config/clawcode/github-app.pem`) - host only
 - Mount allowlist - external, never mounted
 - Any credentials matching blocked patterns
 

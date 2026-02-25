@@ -11,7 +11,7 @@ from collections.abc import Callable
 
 from fastapi import FastAPI, Request, Response
 
-from codeclaw.logger import logger
+from clawcode.logger import logger
 
 OnEventCallback = Callable[[str, str, dict], None]
 
