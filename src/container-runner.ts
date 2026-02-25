@@ -302,9 +302,11 @@ export async function runContainerAgent(
     let stdoutTruncated = false;
     let stderrTruncated = false;
 
-    // Pass secrets via stdin (never written to disk or mounted as files)
-    input.secrets = readSecrets();
-    container.stdin.write(JSON.stringify(input));
+    // Pass secrets via stdin (never written to disk or mounted as files).
+    // Merge base secrets (API keys) with caller-provided secrets (e.g. GitHub token),
+    // letting caller-provided values take precedence.
+    const secrets = { ...readSecrets(), ...input.secrets };
+    container.stdin.write(JSON.stringify({ ...input, secrets }));
     container.stdin.end();
     // Remove secrets from input so they don't appear in logs
     delete input.secrets;

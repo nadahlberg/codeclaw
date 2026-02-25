@@ -30,6 +30,6 @@ groups/global/*
 .vscode/
 
 # Skills system (local per-installation state)
-.nanoclaw/
+.codeclaw/
 
 agents-sdk-docs

@@ -4,17 +4,9 @@
  * for the CodeClaw message pipeline.
  */
 import { escapeXml } from '../router.js';
+import { GitHubEventMetadata } from '../types.js';
 
-export interface GitHubEventMetadata {
-  issueNumber?: number;
-  prNumber?: number;
-  commentId?: number;
-  reviewId?: number;
-  isReviewComment?: boolean;
-  sha?: string;
-  path?: string;
-  line?: number;
-}
+export type { GitHubEventMetadata };
 
 export interface GitHubEvent {
   eventType: string;

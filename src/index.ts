@@ -49,9 +49,6 @@ import { Channel, NewMessage, RegisteredGroup } from './types.js';
 import { startWebhookServer } from './webhook-server.js';
 import { logger } from './logger.js';
 
-// Re-export for backwards compatibility during refactor
-export { escapeXml, formatMessages } from './router.js';
-
 let sessions: Record<string, string> = {};
 let registeredGroups: Record<string, RegisteredGroup> = {};
 let lastAgentTimestamp: Record<string, string> = {};
@@ -173,14 +170,13 @@ async function handleWebhookEvent(
 
   // Access control: check permission and rate limit
   try {
-    const octokit = await tokenManager.getOctokitForRepo(
-      ...Object.values(parseRepoFromJid(event.repoJid)) as [string, string],
-    );
+    const { owner, repo } = parseRepoFromJid(event.repoJid);
+    const octokit = await tokenManager.getOctokitForRepo(owner, repo);
 
     const permCheck = await checkPermission(
       octokit,
-      parseRepoFromJid(event.repoJid).owner,
-      parseRepoFromJid(event.repoJid).repo,
+      owner,
+      repo,
       event.sender,
       DEFAULT_ACCESS_POLICY,
     );

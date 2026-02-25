@@ -1,8 +1,5 @@
 /**
- * Step: register — Write channel registration config, create group folders.
- * Replaces 06-register-channel.sh
- *
- * Fixes: SQL injection (parameterized queries), sed -i '' (uses fs directly).
+ * Step: register — Write group registration config, create group folders.
  */
 import fs from 'fs';
 import path from 'path';
@@ -30,7 +27,7 @@ function parseArgs(args: string[]): RegisterArgs {
     trigger: '',
     folder: '',
     requiresTrigger: true,
-    assistantName: 'Andy',
+    assistantName: 'CodeClaw',
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -105,8 +102,8 @@ export async function run(args: string[]): Promise<void> {
 
   // Update assistant name in CLAUDE.md files if different from default
   let nameUpdated = false;
-  if (parsed.assistantName !== 'Andy') {
-    logger.info({ from: 'Andy', to: parsed.assistantName }, 'Updating assistant name');
+  if (parsed.assistantName !== 'CodeClaw') {
+    logger.info({ from: 'CodeClaw', to: parsed.assistantName }, 'Updating assistant name');
 
     const mdFiles = [
       path.join(projectRoot, 'groups', 'global', 'CLAUDE.md'),
@@ -116,8 +113,8 @@ export async function run(args: string[]): Promise<void> {
     for (const mdFile of mdFiles) {
       if (fs.existsSync(mdFile)) {
         let content = fs.readFileSync(mdFile, 'utf-8');
-        content = content.replace(/^# Andy$/m, `# ${parsed.assistantName}`);
-        content = content.replace(/You are Andy/g, `You are ${parsed.assistantName}`);
+        content = content.replace(/^# CodeClaw$/m, `# ${parsed.assistantName}`);
+        content = content.replace(/You are CodeClaw/g, `You are ${parsed.assistantName}`);
         fs.writeFileSync(mdFile, content);
         logger.info({ file: mdFile }, 'Updated CLAUDE.md');
       }

@@ -9,15 +9,10 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import pino from 'pino';
 
 import { MOUNT_ALLOWLIST_PATH } from './config.js';
+import { logger } from './logger.js';
 import { AdditionalMount, AllowedRoot, MountAllowlist } from './types.js';
-
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  transport: { target: 'pino-pretty', options: { colorize: true } },
-});
 
 // Cache the allowlist in memory - only reloads on process restart
 let cachedAllowlist: MountAllowlist | null = null;
@@ -384,36 +379,3 @@ export function validateAdditionalMounts(
   return validatedMounts;
 }
 
-/**
- * Generate a template allowlist file for users to customize
- */
-export function generateAllowlistTemplate(): string {
-  const template: MountAllowlist = {
-    allowedRoots: [
-      {
-        path: '~/projects',
-        allowReadWrite: true,
-        description: 'Development projects',
-      },
-      {
-        path: '~/repos',
-        allowReadWrite: true,
-        description: 'Git repositories',
-      },
-      {
-        path: '~/Documents/work',
-        allowReadWrite: false,
-        description: 'Work documents (read-only)',
-      },
-    ],
-    blockedPatterns: [
-      // Additional patterns beyond defaults
-      'password',
-      'secret',
-      'token',
-    ],
-    nonMainReadOnly: true,
-  };
-
-  return JSON.stringify(template, null, 2);
-}

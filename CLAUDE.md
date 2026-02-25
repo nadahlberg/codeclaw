@@ -17,7 +17,7 @@ Single Node.js process that receives GitHub webhooks, routes events to Claude Ag
 | `src/github/event-mapper.ts` | Webhook payload → normalized messages |
 | `src/github/access-control.ts` | Permission checking + rate limiting |
 | `src/ipc.ts` | IPC watcher and task processing |
-| `src/router.ts` | Message formatting and outbound routing |
+| `src/router.ts` | Message formatting and XML escaping |
 | `src/config.ts` | Paths, intervals, container config |
 | `src/container-runner.ts` | Spawns agent containers with mounts |
 | `src/task-scheduler.ts` | Runs scheduled tasks |
@@ -29,8 +29,6 @@ Single Node.js process that receives GitHub webhooks, routes events to Claude Ag
 
 | Skill | When to Use |
 |-------|-------------|
-| `/setup` | First-time installation, GitHub App creation, service configuration |
-| `/customize` | Adding integrations, changing behavior |
 | `/debug` | Container issues, logs, troubleshooting |
 | `/update` | Pull upstream changes, merge with customizations, run migrations |
 

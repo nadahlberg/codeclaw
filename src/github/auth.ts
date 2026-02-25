@@ -128,12 +128,6 @@ export class GitHubTokenManager {
     return new Octokit({ auth: token });
   }
 
-  /** Get an Octokit instance authenticated for a specific installation. */
-  async getOctokitForInstallation(installationId: number): Promise<Octokit> {
-    const token = await this.getInstallationToken(installationId);
-    return new Octokit({ auth: token });
-  }
-
   get webhookSecret(): string {
     return this.config.webhookSecret;
   }

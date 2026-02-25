@@ -146,7 +146,7 @@ function setupLinux(projectRoot: string, nodePath: string, homeDir: string): voi
 
 /**
  * Kill any orphaned codeclaw node processes left from previous runs or debugging.
- * Prevents WhatsApp "conflict" disconnects when two instances connect simultaneously.
+ * Prevents port conflicts when two instances try to bind the webhook server simultaneously.
  */
 function killOrphanedProcesses(projectRoot: string): void {
   try {
@@ -241,7 +241,7 @@ WantedBy=${runningAsRoot ? 'multi-user.target' : 'default.target'}`;
     );
   }
 
-  // Kill orphaned codeclaw processes to avoid WhatsApp conflict errors
+  // Kill orphaned codeclaw processes to avoid port conflicts
   killOrphanedProcesses(projectRoot);
 
   // Enable and start

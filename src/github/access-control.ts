@@ -120,18 +120,3 @@ export class RateLimiter {
   }
 }
 
-/**
- * Parse a .github/codeclaw.yml config into an AccessPolicy.
- * Falls back to defaults for missing fields.
- */
-export function parseAccessPolicy(config: Record<string, unknown>): AccessPolicy {
-  const access = (config.access || {}) as Record<string, unknown>;
-  return {
-    minPermission: (access.min_permission as PermissionLevel) || DEFAULT_ACCESS_POLICY.minPermission,
-    allowExternalContributors: access.allow_external === true,
-    rateLimitPerUser: typeof access.rate_limit === 'number'
-      ? access.rate_limit
-      : DEFAULT_ACCESS_POLICY.rateLimitPerUser,
-    rateLimitWindowMs: DEFAULT_ACCESS_POLICY.rateLimitWindowMs,
-  };
-}

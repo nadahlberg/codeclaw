@@ -13,12 +13,11 @@ import Database from 'better-sqlite3';
 
 import { STORE_DIR } from '../src/config.js';
 import { logger } from '../src/logger.js';
-import { getPlatform, getServiceManager, hasSystemd, isRoot } from './platform.js';
+import { getServiceManager, isRoot } from './platform.js';
 import { emitStatus } from './status.js';
 
 export async function run(_args: string[]): Promise<void> {
   const projectRoot = process.cwd();
-  const platform = getPlatform();
   const homeDir = os.homedir();
 
   logger.info('Starting verification');
@@ -97,11 +96,13 @@ export async function run(_args: string[]): Promise<void> {
     }
   }
 
-  // 4. Check WhatsApp auth
-  let whatsappAuth = 'not_found';
-  const authDir = path.join(projectRoot, 'store', 'auth');
-  if (fs.existsSync(authDir) && fs.readdirSync(authDir).length > 0) {
-    whatsappAuth = 'authenticated';
+  // 4. Check GitHub App config
+  let githubApp = 'not_configured';
+  if (fs.existsSync(envFile)) {
+    const envContent2 = fs.readFileSync(envFile, 'utf-8');
+    if (/^GITHUB_APP_ID=/m.test(envContent2) && /^GITHUB_WEBHOOK_SECRET=/m.test(envContent2)) {
+      githubApp = 'configured';
+    }
   }
 
   // 5. Check registered groups (using better-sqlite3, not sqlite3 CLI)
@@ -130,7 +131,7 @@ export async function run(_args: string[]): Promise<void> {
   const status =
     service === 'running' &&
     credentials !== 'missing' &&
-    whatsappAuth !== 'not_found' &&
+    githubApp !== 'not_configured' &&
     registeredGroups > 0
       ? 'success'
       : 'failed';
@@ -141,7 +142,7 @@ export async function run(_args: string[]): Promise<void> {
     SERVICE: service,
     CONTAINER_RUNTIME: containerRuntime,
     CREDENTIALS: credentials,
-    WHATSAPP_AUTH: whatsappAuth,
+    GITHUB_APP: githubApp,
     REGISTERED_GROUPS: registeredGroups,
     MOUNT_ALLOWLIST: mountAllowlist,
     STATUS: status,

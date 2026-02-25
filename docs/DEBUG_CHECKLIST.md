@@ -1,4 +1,4 @@
-# NanoClaw Debug Checklist
+# CodeClaw Debug Checklist
 
 ## Known Issues (2026-02-08)
 
@@ -15,23 +15,23 @@ Both timers fire at the same time, so containers always exit via hard SIGKILL (c
 
 ```bash
 # 1. Is the service running?
-launchctl list | grep nanoclaw
-# Expected: PID  0  com.nanoclaw (PID = running, "-" = not running, non-zero exit = crashed)
+launchctl list | grep codeclaw  # macOS
+systemctl --user status codeclaw  # Linux
 
 # 2. Any running containers?
-container ls --format '{{.Names}} {{.Status}}' 2>/dev/null | grep nanoclaw
+container ls --format '{{.Names}} {{.Status}}' 2>/dev/null | grep codeclaw
 
 # 3. Any stopped/orphaned containers?
-container ls -a --format '{{.Names}} {{.Status}}' 2>/dev/null | grep nanoclaw
+container ls -a --format '{{.Names}} {{.Status}}' 2>/dev/null | grep codeclaw
 
 # 4. Recent errors in service log?
-grep -E 'ERROR|WARN' logs/nanoclaw.log | tail -20
+grep -E 'ERROR|WARN' logs/codeclaw.log | tail -20
 
-# 5. Is WhatsApp connected? (look for last connection event)
-grep -E 'Connected to WhatsApp|Connection closed|connection.*close' logs/nanoclaw.log | tail -5
+# 5. Is the webhook server running?
+grep -E 'Webhook server|listening' logs/codeclaw.log | tail -5
 
-# 6. Are groups loaded?
-grep 'groupCount' logs/nanoclaw.log | tail -3
+# 6. Are repos registered?
+grep -E 'groupCount|registered' logs/codeclaw.log | tail -3
 ```
 
 ## Session Transcript Branching
@@ -62,7 +62,7 @@ for i, line in enumerate(lines):
 
 ```bash
 # Check for recent timeouts
-grep -E 'Container timeout|timed out' logs/nanoclaw.log | tail -10
+grep -E 'Container timeout|timed out' logs/codeclaw.log | tail -10
 
 # Check container log files for the timed-out container
 ls -lt groups/*/logs/container-*.log | head -10
@@ -71,73 +71,62 @@ ls -lt groups/*/logs/container-*.log | head -10
 cat groups/<group>/logs/container-<timestamp>.log
 
 # Check if retries were scheduled and what happened
-grep -E 'Scheduling retry|retry|Max retries' logs/nanoclaw.log | tail -10
+grep -E 'Scheduling retry|retry|Max retries' logs/codeclaw.log | tail -10
 ```
 
 ## Agent Not Responding
 
 ```bash
-# Check if messages are being received from WhatsApp
-grep 'New messages' logs/nanoclaw.log | tail -10
+# Check if webhook events are being received
+grep -E 'webhook|event' logs/codeclaw.log | tail -10
 
-# Check if messages are being processed (container spawned)
-grep -E 'Processing messages|Spawning container' logs/nanoclaw.log | tail -10
-
-# Check if messages are being piped to active container
-grep -E 'Piped messages|sendMessage' logs/nanoclaw.log | tail -10
+# Check if events are being processed (container spawned)
+grep -E 'Processing|Spawning container' logs/codeclaw.log | tail -10
 
 # Check the queue state — any active containers?
-grep -E 'Starting container|Container active|concurrency limit' logs/nanoclaw.log | tail -10
-
-# Check lastAgentTimestamp vs latest message timestamp
-sqlite3 store/messages.db "SELECT chat_jid, MAX(timestamp) as latest FROM messages GROUP BY chat_jid ORDER BY latest DESC LIMIT 5;"
+grep -E 'Starting container|Container active|concurrency limit' logs/codeclaw.log | tail -10
 ```
 
 ## Container Mount Issues
 
 ```bash
 # Check mount validation logs (shows on container spawn)
-grep -E 'Mount validated|Mount.*REJECTED|mount' logs/nanoclaw.log | tail -10
+grep -E 'Mount validated|Mount.*REJECTED|mount' logs/codeclaw.log | tail -10
 
 # Verify the mount allowlist is readable
-cat ~/.config/nanoclaw/mount-allowlist.json
+cat ~/.config/codeclaw/mount-allowlist.json
 
 # Check group's container_config in DB
 sqlite3 store/messages.db "SELECT name, container_config FROM registered_groups;"
 
 # Test-run a container to check mounts (dry run)
-# Replace <group-folder> with the group's folder name
-container run -i --rm --entrypoint ls nanoclaw-agent:latest /workspace/extra/
+container run -i --rm --entrypoint ls codeclaw-agent:latest /workspace/extra/
 ```
 
-## WhatsApp Auth Issues
+## GitHub App Auth Issues
 
 ```bash
-# Check if QR code was requested (means auth expired)
-grep 'QR\|authentication required\|qr' logs/nanoclaw.log | tail -5
+# Check for authentication errors
+grep -E 'auth\|token\|JWT\|401\|403' logs/codeclaw.log | tail -10
 
-# Check auth files exist
-ls -la store/auth/
-
-# Re-authenticate if needed
-npm run auth
+# Verify GitHub App credentials exist
+test -f .env && grep -c GITHUB_APP_ID .env
+test -f ~/.config/codeclaw/github-app.pem && echo "PEM exists" || echo "PEM missing"
 ```
 
 ## Service Management
 
 ```bash
-# Restart the service
-launchctl kickstart -k gui/$(id -u)/com.nanoclaw
+# macOS (launchd)
+launchctl kickstart -k gui/$(id -u)/com.codeclaw  # restart
+tail -f logs/codeclaw.log                          # view live logs
+launchctl bootout gui/$(id -u)/com.codeclaw        # stop
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.codeclaw.plist  # start
 
-# View live logs
-tail -f logs/nanoclaw.log
-
-# Stop the service (careful — running containers are detached, not killed)
-launchctl bootout gui/$(id -u)/com.nanoclaw
-
-# Start the service
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.nanoclaw.plist
+# Linux (systemd)
+systemctl --user restart codeclaw
+journalctl --user -u codeclaw -f                   # view live logs
 
 # Rebuild after code changes
-npm run build && launchctl kickstart -k gui/$(id -u)/com.nanoclaw
+npm run build && launchctl kickstart -k gui/$(id -u)/com.codeclaw
 ```

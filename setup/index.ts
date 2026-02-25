@@ -9,8 +9,6 @@ const STEPS: Record<string, () => Promise<{ run: (args: string[]) => Promise<voi
   environment: () => import('./environment.js'),
   'github-app': () => import('./github-app.js'),
   container: () => import('./container.js'),
-  'whatsapp-auth': () => import('./whatsapp-auth.js'),
-  groups: () => import('./groups.js'),
   register: () => import('./register.js'),
   mounts: () => import('./mounts.js'),
   service: () => import('./service.js'),
