@@ -18,7 +18,7 @@ def format_messages(messages: list[NewMessage]) -> str:
         f'<message sender="{escape_xml(m.sender_name)}" time="{m.timestamp}">{escape_xml(m.content)}</message>'
         for m in messages
     ]
-    return f"<messages>\n" + "\n".join(lines) + "\n</messages>"
+    return "<messages>\n" + "\n".join(lines) + "\n</messages>"
 
 
 def strip_internal_tags(text: str) -> str:

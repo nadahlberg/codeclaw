@@ -8,7 +8,7 @@ Containers only receive short-lived installation tokens, never the private key.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
@@ -85,7 +85,7 @@ class GitHubTokenManager:
             data = resp.json()
             token = data["token"]
             # Parse ISO 8601 expiry to timestamp
-            from datetime import datetime, timezone
+            from datetime import datetime
 
             expires_at_str = data.get("expires_at", "")
             if expires_at_str:

@@ -10,7 +10,6 @@ import json
 import os
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Callable, Coroutine
 
 from codeclaw.config import DATA_DIR, MAX_CONCURRENT_CONTAINERS
@@ -74,6 +73,7 @@ class GroupQueue:
             logger.debug("At concurrency limit, message queued", group_jid=group_jid, active_count=self._active_count)
             return
 
+        self._activate(state)
         asyncio.ensure_future(self._run_for_group(group_jid, "messages"))
 
     def enqueue_task(self, group_jid: str, task_id: str, fn: Callable[[], Coroutine]) -> None:
@@ -100,7 +100,13 @@ class GroupQueue:
             logger.debug("At concurrency limit, task queued", group_jid=group_jid, task_id=task_id, active_count=self._active_count)
             return
 
+        self._activate(state)
         asyncio.ensure_future(self._run_task(group_jid, QueuedTask(id=task_id, group_jid=group_jid, fn=fn)))
+
+    def _activate(self, state: GroupState) -> None:
+        """Mark a group slot as active synchronously before launching a future."""
+        state.active = True
+        self._active_count += 1
 
     def register_process(self, group_jid: str, proc: object, container_name: str, group_folder: str | None = None) -> None:
         state = self._get_group(group_jid)
@@ -147,11 +153,9 @@ class GroupQueue:
 
     async def _run_for_group(self, group_jid: str, reason: str) -> None:
         state = self._get_group(group_jid)
-        state.active = True
         state.idle_waiting = False
         state.is_task_container = False
         state.pending_messages = False
-        self._active_count += 1
 
         logger.debug("Starting container for group", group_jid=group_jid, reason=reason, active_count=self._active_count)
 
@@ -175,10 +179,8 @@ class GroupQueue:
 
     async def _run_task(self, group_jid: str, task: QueuedTask) -> None:
         state = self._get_group(group_jid)
-        state.active = True
         state.idle_waiting = False
         state.is_task_container = True
-        self._active_count += 1
 
         logger.debug("Running queued task", group_jid=group_jid, task_id=task.id, active_count=self._active_count)
 
@@ -216,10 +218,12 @@ class GroupQueue:
 
         if state.pending_tasks:
             task = state.pending_tasks.pop(0)
+            self._activate(state)
             asyncio.ensure_future(self._run_task(group_jid, task))
             return
 
         if state.pending_messages:
+            self._activate(state)
             asyncio.ensure_future(self._run_for_group(group_jid, "drain"))
             return
 
@@ -232,8 +236,10 @@ class GroupQueue:
 
             if state.pending_tasks:
                 task = state.pending_tasks.pop(0)
+                self._activate(state)
                 asyncio.ensure_future(self._run_task(next_jid, task))
             elif state.pending_messages:
+                self._activate(state)
                 asyncio.ensure_future(self._run_for_group(next_jid, "drain"))
 
     async def shutdown(self, grace_period_ms: int) -> None:

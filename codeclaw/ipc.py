@@ -7,17 +7,15 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import random
 import shutil
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Callable, Coroutine
 
 from croniter import croniter
 
-from codeclaw.config import DATA_DIR, IPC_POLL_INTERVAL, MAIN_GROUP_FOLDER, TIMEZONE
+from codeclaw.config import DATA_DIR, IPC_POLL_INTERVAL, MAIN_GROUP_FOLDER
 from codeclaw.db import create_task, delete_task, get_task_by_id, update_task
 from codeclaw.group_folder import is_valid_group_folder
 from codeclaw.logger import logger

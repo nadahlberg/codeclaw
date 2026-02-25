@@ -37,7 +37,7 @@ class TestEnsureContainerRuntimeRunning:
 
     @patch("codeclaw.container_runtime.subprocess.run")
     def test_raises_when_docker_info_fails(self, mock_run):
-        mock_run.side_effect = Exception("Cannot connect to the Docker daemon")
+        mock_run.side_effect = FileNotFoundError("Cannot connect to the Docker daemon")
         with pytest.raises(RuntimeError, match="Container runtime is required"):
             ensure_container_runtime_running()
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import sqlite3
 from datetime import datetime, timezone
-from pathlib import Path
 
 from codeclaw.config import ASSISTANT_NAME, DATA_DIR, STORE_DIR
 from codeclaw.group_folder import is_valid_group_folder

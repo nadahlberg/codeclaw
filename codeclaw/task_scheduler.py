@@ -13,7 +13,7 @@ from typing import Callable, Coroutine
 
 from croniter import croniter
 
-from codeclaw.config import ASSISTANT_NAME, MAIN_GROUP_FOLDER, SCHEDULER_POLL_INTERVAL, TIMEZONE
+from codeclaw.config import ASSISTANT_NAME, MAIN_GROUP_FOLDER, SCHEDULER_POLL_INTERVAL
 from codeclaw.container_runner import ContainerInput, ContainerOutput, run_container_agent, write_tasks_snapshot
 from codeclaw.db import get_all_tasks, get_due_tasks, get_task_by_id, log_task_run, update_task, update_task_after_run
 from codeclaw.group_folder import resolve_group_folder_path

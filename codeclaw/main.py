@@ -7,12 +7,9 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import secrets
-import signal
 import subprocess
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -35,7 +32,7 @@ from codeclaw.container_runner import (
     write_groups_snapshot,
     write_tasks_snapshot,
 )
-from codeclaw.container_runtime import cleanup_orphans, ensure_container_runtime_running
+from codeclaw.container_runtime import ensure_container_runtime_running
 from codeclaw.db import (
     cleanup_processed_events,
     get_all_chats,
@@ -56,7 +53,6 @@ from codeclaw.db import (
 from codeclaw.github.access_control import DEFAULT_ACCESS_POLICY, RateLimiter, check_permission
 from codeclaw.github.auth import GitHubTokenManager, load_github_app_config
 from codeclaw.github.event_mapper import (
-    GitHubEvent,
     map_webhook_to_event,
     parse_repo_from_jid,
     repo_jid_from_thread_jid,
@@ -300,7 +296,6 @@ async def _process_group_messages(chat_jid: str) -> bool:
         loop = asyncio.get_event_loop()
         idle_handle = loop.call_later(IDLE_TIMEOUT / 1000, lambda: _queue.close_stdin(chat_jid))
 
-    had_error = False
     output_sent = False
 
     result = await _run_agent(group, prompt, chat_jid, repo_checkout_path, github_token, channel, reset_idle_timer)
