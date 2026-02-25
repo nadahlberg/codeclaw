@@ -41,7 +41,7 @@ groups/global/*
 .vscode/
 
 # Skills system (local per-installation state)
-.codeclaw/
+.clawcode/
 
 # Testing
 .pytest_cache/

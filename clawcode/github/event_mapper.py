@@ -1,7 +1,7 @@
 """GitHub Event Mapper.
 
 Converts webhook payloads into normalized GitHubEvent objects
-for the CodeClaw message pipeline.
+for the ClawCode message pipeline.
 """
 
 from __future__ import annotations
@@ -9,8 +9,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from codeclaw.models import GitHubEventMetadata
-from codeclaw.router import escape_xml
+from clawcode.models import GitHubEventMetadata
+from clawcode.router import escape_xml
 
 
 @dataclass

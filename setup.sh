@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# setup.sh — Bootstrap script for CodeClaw
+# setup.sh — Bootstrap script for ClawCode
 # Checks Python environment and installs dependencies.
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -106,7 +106,7 @@ elif [ "$DEPS_OK" = "false" ]; then
 fi
 
 cat <<EOF
-=== CODECLAW SETUP: BOOTSTRAP ===
+=== CLAWCODE SETUP: BOOTSTRAP ===
 PLATFORM: $PLATFORM
 IS_WSL: $IS_WSL
 IS_ROOT: $IS_ROOT

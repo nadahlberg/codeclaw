@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from codeclaw.group_folder import is_valid_group_folder, resolve_group_folder_path, resolve_group_ipc_path
+from clawcode.group_folder import is_valid_group_folder, resolve_group_folder_path, resolve_group_ipc_path
 
 
 class TestGroupFolderValidation:

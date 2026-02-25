@@ -1,4 +1,4 @@
-"""Container Runner for CodeClaw.
+"""Container Runner for ClawCode.
 
 Spawns agent execution in containers and handles IPC.
 """
@@ -13,7 +13,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from codeclaw.config import (
+from clawcode.config import (
     CONTAINER_IMAGE,
     CONTAINER_MAX_OUTPUT_SIZE,
     CONTAINER_TIMEOUT,
@@ -22,15 +22,15 @@ from codeclaw.config import (
     IDLE_TIMEOUT,
     TIMEZONE,
 )
-from codeclaw.container_runtime import CONTAINER_RUNTIME_BIN, readonly_mount_args, stop_container_cmd
-from codeclaw.env import read_env_file
-from codeclaw.group_folder import resolve_group_folder_path, resolve_group_ipc_path
-from codeclaw.logger import logger
-from codeclaw.models import RegisteredGroup
-from codeclaw.mount_security import validate_additional_mounts
+from clawcode.container_runtime import CONTAINER_RUNTIME_BIN, readonly_mount_args, stop_container_cmd
+from clawcode.env import read_env_file
+from clawcode.group_folder import resolve_group_folder_path, resolve_group_ipc_path
+from clawcode.logger import logger
+from clawcode.models import RegisteredGroup
+from clawcode.mount_security import validate_additional_mounts
 
-OUTPUT_START_MARKER = "---CODECLAW_OUTPUT_START---"
-OUTPUT_END_MARKER = "---CODECLAW_OUTPUT_END---"
+OUTPUT_START_MARKER = "---CLAWCODE_OUTPUT_START---"
+OUTPUT_END_MARKER = "---CLAWCODE_OUTPUT_END---"
 
 
 @dataclass
@@ -176,7 +176,7 @@ async def run_container_agent(
 
     mounts = _build_volume_mounts(group, input_data.is_main, input_data.repo_checkout_path)
     safe_name = group.folder.replace("/", "-").replace("\\", "-")
-    container_name = f"codeclaw-{safe_name}-{int(time.time() * 1000)}"
+    container_name = f"clawcode-{safe_name}-{int(time.time() * 1000)}"
     container_args = _build_container_args(mounts, container_name)
 
     logger.info(

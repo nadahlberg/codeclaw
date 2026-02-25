@@ -1,4 +1,4 @@
-"""CodeClaw Agent Runner.
+"""ClawCode Agent Runner.
 
 Runs inside a container, receives config via stdin, outputs result to stdout.
 
@@ -45,8 +45,8 @@ IPC_INPUT_DIR = Path("/workspace/ipc/input")
 IPC_INPUT_CLOSE_SENTINEL = IPC_INPUT_DIR / "_close"
 IPC_POLL_SECS = 0.5
 
-OUTPUT_START_MARKER = "---CODECLAW_OUTPUT_START---"
-OUTPUT_END_MARKER = "---CODECLAW_OUTPUT_END---"
+OUTPUT_START_MARKER = "---CLAWCODE_OUTPUT_START---"
+OUTPUT_END_MARKER = "---CLAWCODE_OUTPUT_END---"
 
 SECRET_ENV_VARS = ["ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"]
 
@@ -349,7 +349,7 @@ async def main() -> None:
         os.environ["GITHUB_TOKEN"] = container_input.secrets["GITHUB_TOKEN"]
 
     # Create in-process MCP tools
-    codeclaw_server = create_ipc_tools(
+    clawcode_server = create_ipc_tools(
         chat_jid=container_input.chat_jid,
         group_folder=container_input.group_folder,
         is_main=container_input.is_main,
@@ -409,12 +409,12 @@ async def main() -> None:
             "TeamCreate", "TeamDelete", "SendMessage",
             "TodoWrite", "ToolSearch", "Skill",
             "NotebookEdit",
-            "mcp__codeclaw__*",
+            "mcp__clawcode__*",
         ],
         env=sdk_env,
         permission_mode="bypassPermissions",
         setting_sources=["project", "user"],
-        mcp_servers={"codeclaw": codeclaw_server},
+        mcp_servers={"clawcode": clawcode_server},
         hooks={
             "PreCompact": [
                 HookMatcher(hooks=[create_pre_compact_hook(container_input.assistant_name)])

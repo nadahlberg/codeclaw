@@ -1,10 +1,10 @@
-"""Shared test fixtures for CodeClaw tests."""
+"""Shared test fixtures for ClawCode tests."""
 
 from __future__ import annotations
 
 import pytest
 
-from codeclaw import db
+from clawcode import db
 
 
 @pytest.fixture(autouse=True)

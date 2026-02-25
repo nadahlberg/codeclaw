@@ -1,7 +1,7 @@
 """GitHub App Authentication.
 
 Manages JWT generation and installation token caching.
-The private key lives at ~/.config/codeclaw/github-app.pem (outside project root).
+The private key lives at ~/.config/clawcode/github-app.pem (outside project root).
 Containers only receive short-lived installation tokens, never the private key.
 """
 
@@ -14,8 +14,8 @@ from pathlib import Path
 import httpx
 import jwt
 
-from codeclaw.env import read_env_file
-from codeclaw.logger import logger
+from clawcode.env import read_env_file
+from clawcode.logger import logger
 
 
 @dataclass
@@ -56,7 +56,7 @@ class GitHubTokenManager:
         }
 
     async def get_app_slug(self) -> str:
-        """Get the app slug (login name like 'codeclaw-ai[bot]')."""
+        """Get the app slug (login name like 'clawcode-ai[bot]')."""
         if self.config.app_slug:
             return self.config.app_slug
         async with httpx.AsyncClient() as client:
@@ -181,7 +181,7 @@ def load_github_app_config() -> GitHubAppConfig | None:
     if not private_key:
         key_path = env.get(
             "GITHUB_PRIVATE_KEY_PATH",
-            str(Path.home() / ".config" / "codeclaw" / "github-app.pem"),
+            str(Path.home() / ".config" / "clawcode" / "github-app.pem"),
         )
         try:
             private_key = Path(key_path).read_text()

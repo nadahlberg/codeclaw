@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.codeclaw</string>
+    <string>com.clawcode</string>
     <key>ProgramArguments</key>
     <array>
         <string>{{NODE_PATH}}</string>
@@ -22,11 +22,11 @@
         <key>HOME</key>
         <string>{{HOME}}</string>
         <key>ASSISTANT_NAME</key>
-        <string>CodeClaw</string>
+        <string>ClawCode</string>
     </dict>
     <key>StandardOutPath</key>
-    <string>{{PROJECT_ROOT}}/logs/codeclaw.log</string>
+    <string>{{PROJECT_ROOT}}/logs/clawcode.log</string>
     <key>StandardErrorPath</key>
-    <string>{{PROJECT_ROOT}}/logs/codeclaw.error.log</string>
+    <string>{{PROJECT_ROOT}}/logs/clawcode.error.log</string>
 </dict>
 </plist>

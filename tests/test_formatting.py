@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import re
 
-from codeclaw.config import ASSISTANT_NAME
-from codeclaw.router import escape_xml, format_messages, format_outbound, strip_internal_tags
+from clawcode.config import ASSISTANT_NAME
+from clawcode.router import escape_xml, format_messages, format_outbound, strip_internal_tags
 
 
 # ---------------------------------------------------------------------------

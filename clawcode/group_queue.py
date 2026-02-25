@@ -12,8 +12,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable, Coroutine
 
-from codeclaw.config import DATA_DIR, MAX_CONCURRENT_CONTAINERS
-from codeclaw.logger import logger
+from clawcode.config import DATA_DIR, MAX_CONCURRENT_CONTAINERS
+from clawcode.logger import logger
 
 MAX_RETRIES = 5
 BASE_RETRY_MS = 5000

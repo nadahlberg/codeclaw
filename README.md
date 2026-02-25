@@ -1,17 +1,17 @@
-# CodeClaw
+# ClawCode
 
 A GitHub AI coding agent that responds to issues and pull requests using Claude in isolated containers.
 
 ## How It Works
 
 ```
-GitHub webhook → CodeClaw → Container (Claude Agent SDK) → GitHub API response
+GitHub webhook → ClawCode → Container (Claude Agent SDK) → GitHub API response
 ```
 
-When someone @mentions your bot in an issue or PR, CodeClaw:
+When someone @mentions your bot in an issue or PR, ClawCode:
 
 1. Receives the webhook event
-2. Checks permissions (configurable per-repo via `.github/codeclaw.yml`)
+2. Checks permissions (configurable per-repo via `.github/clawcode.yml`)
 3. Clones the repo into an isolated container
 4. Runs Claude Agent SDK with full access to the codebase
 5. Posts comments, reviews, or creates PRs via the GitHub API
@@ -22,7 +22,7 @@ Agents run in Linux containers with filesystem isolation. They can only see the 
 
 ```bash
 git clone <your-fork-url>
-cd codeclaw
+cd clawcode
 pip install -e ".[dev]"
 ./container/build.sh
 ```
@@ -35,14 +35,14 @@ Before starting the server, create a GitHub App. Pass the public URL where GitHu
 python -m setup.github_app --webhook-url https://your-domain.com
 ```
 
-This opens your browser to create a GitHub App via the manifest flow, exchanges the OAuth code, and saves the credentials to `.env` and `~/.config/codeclaw/github-app.pem` automatically. Install the app on the repos you want to monitor when prompted.
+This opens your browser to create a GitHub App via the manifest flow, exchanges the OAuth code, and saves the credentials to `.env` and `~/.config/clawcode/github-app.pem` automatically. Install the app on the repos you want to monitor when prompted.
 
 ### Start the server
 
 ```bash
-codeclaw
+clawcode
 # or
-python -m codeclaw.main
+python -m clawcode.main
 ```
 
 ## Deploy to Fly.io
@@ -70,11 +70,11 @@ Set `ANTHROPIC_API_KEY` in your environment, then run the setup to create a GitH
 python -m setup.github_app --webhook-url https://your-public-url.com
 ```
 
-This writes `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, and `GITHUB_PRIVATE_KEY_PATH` to `.env` automatically. If you prefer to configure manually, set these environment variables yourself and store the private key at `~/.config/codeclaw/github-app.pem`.
+This writes `GITHUB_APP_ID`, `GITHUB_WEBHOOK_SECRET`, and `GITHUB_PRIVATE_KEY_PATH` to `.env` automatically. If you prefer to configure manually, set these environment variables yourself and store the private key at `~/.config/clawcode/github-app.pem`.
 
 ## Per-Repo Configuration
 
-Create `.github/codeclaw.yml` in any repo where your GitHub App is installed:
+Create `.github/clawcode.yml` in any repo where your GitHub App is installed:
 
 ```yaml
 access:
@@ -89,9 +89,9 @@ Permission levels: `admin` > `maintain` > `write` > `triage` > `read` > `none`
 
 ```bash
 pip install -e ".[dev]"     # Install with dev dependencies
-python -m codeclaw.main     # Run the server
+python -m clawcode.main     # Run the server
 pytest                      # Run tests
-ruff check codeclaw/ tests/ # Lint
+ruff check clawcode/ tests/ # Lint
 ./container/build.sh        # Rebuild agent container
 ```
 
@@ -100,16 +100,16 @@ ruff check codeclaw/ tests/ # Lint
 Single Python process (FastAPI + uvicorn). Webhook-driven (no polling). Agents execute in isolated Linux containers with filesystem isolation.
 
 Key files:
-- `codeclaw/main.py` — Orchestrator: webhook handling, repo checkout, agent invocation
-- `codeclaw/webhook_server.py` — FastAPI server for GitHub webhooks
-- `codeclaw/channels/github.py` — GitHub channel: comments, reviews, PRs via httpx
-- `codeclaw/github/auth.py` — GitHub App JWT auth + installation token caching
-- `codeclaw/github/event_mapper.py` — Webhook payload normalization
-- `codeclaw/github/access_control.py` — Permission checking + rate limiting
-- `codeclaw/container_runner.py` — Spawns agent containers with repo mounts
-- `codeclaw/ipc.py` — IPC watcher for structured GitHub responses
-- `codeclaw/task_scheduler.py` — Scheduled tasks
-- `codeclaw/db.py` — SQLite (messages, groups, processed events)
+- `clawcode/main.py` — Orchestrator: webhook handling, repo checkout, agent invocation
+- `clawcode/webhook_server.py` — FastAPI server for GitHub webhooks
+- `clawcode/channels/github.py` — GitHub channel: comments, reviews, PRs via httpx
+- `clawcode/github/auth.py` — GitHub App JWT auth + installation token caching
+- `clawcode/github/event_mapper.py` — Webhook payload normalization
+- `clawcode/github/access_control.py` — Permission checking + rate limiting
+- `clawcode/container_runner.py` — Spawns agent containers with repo mounts
+- `clawcode/ipc.py` — IPC watcher for structured GitHub responses
+- `clawcode/task_scheduler.py` — Scheduled tasks
+- `clawcode/db.py` — SQLite (messages, groups, processed events)
 - `container/agent_runner/main.py` — In-container agent runner (Python SDK)
 - `container/agent_runner/ipc_tools.py` — In-process MCP tools for agents
 

@@ -1,4 +1,4 @@
-"""CodeClaw Main Orchestrator.
+"""ClawCode Main Orchestrator.
 
 Webhook handling, repo checkout, agent invocation, and message routing.
 """
@@ -15,8 +15,8 @@ from pathlib import Path
 
 import uvicorn
 
-from codeclaw.channels.github import GitHubChannel, GitHubResponseTarget
-from codeclaw.config import (
+from clawcode.channels.github import GitHubChannel, GitHubResponseTarget
+from clawcode.config import (
     ASSISTANT_NAME,
     DATA_DIR,
     IDLE_TIMEOUT,
@@ -24,7 +24,7 @@ from codeclaw.config import (
     PORT,
     RECONCILIATION_INTERVAL,
 )
-from codeclaw.container_runner import (
+from clawcode.container_runner import (
     ContainerInput,
     ContainerOutput,
     add_github_token,
@@ -32,8 +32,8 @@ from codeclaw.container_runner import (
     write_groups_snapshot,
     write_tasks_snapshot,
 )
-from codeclaw.container_runtime import ensure_container_runtime_running
-from codeclaw.db import (
+from clawcode.container_runtime import ensure_container_runtime_running
+from clawcode.db import (
     cleanup_processed_events,
     get_all_chats,
     get_all_registered_groups,
@@ -50,21 +50,21 @@ from codeclaw.db import (
     store_chat_metadata,
     store_message,
 )
-from codeclaw.github.access_control import DEFAULT_ACCESS_POLICY, RateLimiter, check_permission
-from codeclaw.github.auth import GitHubTokenManager, load_github_app_config
-from codeclaw.github.event_mapper import (
+from clawcode.github.access_control import DEFAULT_ACCESS_POLICY, RateLimiter, check_permission
+from clawcode.github.auth import GitHubTokenManager, load_github_app_config
+from clawcode.github.event_mapper import (
     map_webhook_to_event,
     parse_repo_from_jid,
     repo_jid_from_thread_jid,
 )
-from codeclaw.group_folder import resolve_group_folder_path
-from codeclaw.group_queue import GroupQueue
-from codeclaw.ipc import IpcDeps, start_ipc_watcher
-from codeclaw.logger import logger
-from codeclaw.models import NewMessage, RegisteredGroup
-from codeclaw.router import find_channel, format_messages, format_outbound
-from codeclaw.task_scheduler import SchedulerDependencies, start_scheduler_loop
-from codeclaw.webhook_server import create_app
+from clawcode.group_folder import resolve_group_folder_path
+from clawcode.group_queue import GroupQueue
+from clawcode.ipc import IpcDeps, start_ipc_watcher
+from clawcode.logger import logger
+from clawcode.models import NewMessage, RegisteredGroup
+from clawcode.router import find_channel, format_messages, format_outbound
+from clawcode.task_scheduler import SchedulerDependencies, start_scheduler_loop
+from clawcode.webhook_server import create_app
 
 # Module-level state
 _sessions: dict[str, str] = {}
@@ -213,7 +213,7 @@ async def _handle_installation_event(payload: dict) -> None:
         _register_group(repo_jid, RegisteredGroup(
             name=repo_data["full_name"],
             folder=folder,
-            trigger=f"@{installation.get('app_slug', 'codeclaw')}",
+            trigger=f"@{installation.get('app_slug', 'clawcode')}",
             added_at=datetime.now(timezone.utc).isoformat(),
             requires_trigger=True,
         ))
@@ -243,8 +243,8 @@ async def _prepare_repo_checkout(owner: str, repo: str, token: str) -> str:
             logger.warning("Failed to fetch repo, using existing checkout", owner=owner, repo=repo, error=str(err))
 
     try:
-        subprocess.run(["git", "-C", repo_dir, "config", "user.name", "CodeClaw AI"], capture_output=True)
-        subprocess.run(["git", "-C", repo_dir, "config", "user.email", "codeclaw[bot]@users.noreply.github.com"], capture_output=True)
+        subprocess.run(["git", "-C", repo_dir, "config", "user.name", "ClawCode AI"], capture_output=True)
+        subprocess.run(["git", "-C", repo_dir, "config", "user.email", "clawcode[bot]@users.noreply.github.com"], capture_output=True)
     except Exception:
         pass
 
@@ -471,7 +471,7 @@ async def _async_main() -> None:
     _recover_pending_messages()
     asyncio.create_task(_reconciliation_loop())
 
-    logger.info("CodeClaw running (GitHub webhook mode)", port=PORT)
+    logger.info("ClawCode running (GitHub webhook mode)", port=PORT)
 
     # Run uvicorn
     config = uvicorn.Config(app, host="0.0.0.0", port=PORT, log_level="warning")
@@ -504,13 +504,13 @@ async def _ipc_send_structured(jid: str, text: str, target: dict) -> None:
 
 
 def main() -> None:
-    """Entry point for the codeclaw command."""
+    """Entry point for the clawcode command."""
     try:
         asyncio.run(_async_main())
     except KeyboardInterrupt:
         logger.info("Shutdown signal received")
     except Exception as err:
-        logger.error("Failed to start CodeClaw", error=str(err))
+        logger.error("Failed to start ClawCode", error=str(err))
         sys.exit(1)
 
 

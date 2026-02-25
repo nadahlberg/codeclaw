@@ -4,10 +4,10 @@ import json
 import sqlite3
 from datetime import datetime, timezone
 
-from codeclaw.config import ASSISTANT_NAME, DATA_DIR, STORE_DIR
-from codeclaw.group_folder import is_valid_group_folder
-from codeclaw.logger import logger
-from codeclaw.models import NewMessage, RegisteredGroup, ScheduledTask, TaskRunLog
+from clawcode.config import ASSISTANT_NAME, DATA_DIR, STORE_DIR
+from clawcode.group_folder import is_valid_group_folder
+from clawcode.logger import logger
+from clawcode.models import NewMessage, RegisteredGroup, ScheduledTask, TaskRunLog
 
 _db: sqlite3.Connection | None = None
 

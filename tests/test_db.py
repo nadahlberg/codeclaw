@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from codeclaw.db import (
+from clawcode.db import (
     create_task,
     delete_task,
     get_all_chats,
@@ -12,7 +12,7 @@ from codeclaw.db import (
     store_message,
     update_task,
 )
-from codeclaw.models import NewMessage, ScheduledTask
+from clawcode.models import NewMessage, ScheduledTask
 
 
 # ---------------------------------------------------------------------------

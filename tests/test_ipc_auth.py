@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import pytest
 
-from codeclaw.db import (
+from clawcode.db import (
     create_task,
     get_all_tasks,
     get_registered_group,
     get_task_by_id,
     set_registered_group,
 )
-from codeclaw.ipc import IpcDeps, process_task_ipc
-from codeclaw.models import RegisteredGroup, ScheduledTask
+from clawcode.ipc import IpcDeps, process_task_ipc
+from clawcode.models import RegisteredGroup, ScheduledTask
 
 MAIN_GROUP = RegisteredGroup(
     name="Main", folder="main", trigger="always", added_at="2024-01-01T00:00:00.000Z"

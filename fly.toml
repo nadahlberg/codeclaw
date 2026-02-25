@@ -1,7 +1,7 @@
-# CodeClaw Fly.io Configuration
+# ClawCode Fly.io Configuration
 # Deploy with: fly launch / fly deploy
 
-app = "codeclaw"
+app = "clawcode"
 primary_region = "iad"
 
 [build]
@@ -22,5 +22,5 @@ primary_region = "iad"
   memory = "1024mb"
 
 [mounts]
-  source = "codeclaw_data"
+  source = "clawcode_data"
   destination = "/data"

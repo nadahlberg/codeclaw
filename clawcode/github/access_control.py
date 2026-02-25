@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 import httpx
 
-from codeclaw.logger import logger
+from clawcode.logger import logger
 
 PermissionLevel = str  # 'admin' | 'maintain' | 'write' | 'triage' | 'read' | 'none'
 

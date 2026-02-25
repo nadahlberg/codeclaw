@@ -1,6 +1,6 @@
 import re
 
-from codeclaw.config import DATA_DIR, GROUPS_DIR
+from clawcode.config import DATA_DIR, GROUPS_DIR
 
 # Allow owner--repo format for GitHub repos (e.g., "octocat--hello-world")
 _GROUP_FOLDER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\-]{0,127}$")
